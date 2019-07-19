@@ -1,0 +1,176 @@
+1. The reason why 
+```c++
+template<class T>
+void f(T param[])
+```
+compiles is that there is no such a thing as array function parameters in C++. So that is equivalent to
+
+```c++
+template<class T>
+void f(T* param)
+```
+
+`const char name[] = "Hello world";`
+When you call `f(name)`, name is convertible to char* hence the `param` is deduced to be `char*` because an array type is trated like a pointer.
+
+But the niche case is when we can declare reference to array (and yes that is possible). Only in that case the type is deduced to be `const char[]`
+
+Example:
+
+```c++
+
+#include <cstdio>
+#include<iostream>
+using namespace std;
+
+template<typename T>
+void f_ptr(T* param){
+  return; 
+}
+
+template<typename T>
+void f_array(T param[]){
+  return; 
+}
+
+
+template<typename T>
+void f_reference(T& param){
+  return; 
+}
+
+int main()
+{
+	const char name[] = "hello world";
+  f_array(name);
+  f_reference(name);
+  f_ptr(name);
+  return 0;
+}
+```
+becomes
+
+```c++
+#include <cstdio>
+#include<iostream>
+using namespace std;
+
+template<typename T>
+void f_ptr(T* param){
+  return; 
+}
+
+/* First instantiated from: insights.cpp:26 */
+template<>
+void f_ptr<const char>(const char * param)
+{
+  return;
+}
+
+
+
+template<typename T>
+void f_array(T param[]){
+  return; 
+}
+
+/* First instantiated from: insights.cpp:24 */
+
+template<>
+void f_array<const char>(const char * param)
+{
+  return;
+}
+
+
+
+
+template<typename T>
+void f_reference(T& param){
+  return; 
+}
+
+/* First instantiated from: insights.cpp:25 */
+
+template<>
+void f_reference<char const[12]>(char const (&param)[12])
+{
+  return;
+}
+
+
+
+int main()
+{
+  const char name[12] = "hello world";
+  f_array(name);
+  f_reference(name);
+  f_ptr(name);
+  return 0;
+}
+```
+
+# auto
+Template deduction is about deducting types for functions parameters involving templates. `auto` is a bit different because you do not use auto with templates. Interestingly the difference is almost null becuase auto works more or less the same way template deduction does.
+
+
+when you delcare `auto a = 33` they keyworkd `auto` is like `T` in a template. 
+
+```c++
+auto a = 3;
+const auto ca = 3;
+const auto& ra = &ca;
+```
+is equivalent to:
+
+```c++
+template<class T>
+void f(T a);
+
+template<class T>
+void f(const T a);
+
+template<class T>
+void f(const T& a);
+```
+
+
+
+## `auto&&`
+```c++
+int x = 3;
+const int cx = 5;
+auto&& a = x //=> what type is a?
+auto&& a = 3 //=> what type is a?
+auto&& a = cx //=> what type is a?
+```
+
+## arrays:
+
+```c++
+const char [] name = "blablabla";
+auto s = name; //type of s?
+auto& rs = name; //type of rs?
+```
+
+## functions
+```c++
+int func(const int a, const double b, ...){}
+
+auto func1 = func; //what type is func1?
+auto& func2 = func; //what type is func2?
+
+```
+
+There is one difference when you use initializer lists:
+in C++ you can initialize stuff in 4 ways
+```c++
+auto a = 3;
+auto b(22);
+auto c = {3};
+auto b{22};
+```
+
+be careful when you use the `{}` ways with auto because the type can end up being `std::initializer_list<T>`.
+
+
