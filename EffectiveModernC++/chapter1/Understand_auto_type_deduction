@@ -173,4 +173,42 @@ auto b{22};
 
 be careful when you use the `{}` ways with auto because the type can end up being `std::initializer_list<T>`.
 
+################ from ISLA std::initializer_list ###################
+#include <cstdio>
+#include <initializer_list>
+
+template<typename T> // template with parameter
+void f(T param); // declaration equivalent to x's declaration
+
+
+/*template<typename T>
+void f_list(std::initializer_list<T> initList);
+*
+
+/*
+auto createInitList()
+{
+return { 1, 2, 3 }; // error: can't deduce type for { 1, 2, 3 }
+}
+
+std::vector<int> v;
+auto resetV =
+[&v](const auto& newValue) { v = newValue; }; // C++14 type for { 1, 2, 3 }
+resetV({ 1, 2, 3 });
+*/
+int main()
+{
+   //Initialization list with different types
+//auto x5 = { 1, 2, 3.0 }; 
+
+
+//Using Explicit Initialization list for template function call
+/*
+auto x = { 11, 23, 9 }; // x's type is std::initializer_list<int>
+f({ 11, 23, 9 }); 
+*/
+
+//f_list({ 11, 23, 9 }); // T deduced as int, and initList's type is std::initializer_list<int>
+}
+
 
