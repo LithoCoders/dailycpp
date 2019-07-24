@@ -3,6 +3,7 @@
 # Item 5
 
 Note: Contains code snippets from Effective Modern C++ by Scott Meyers
+Skipped the part on std::function as it goes out of point.
 
 Today, we we'll be discussing Item 5, which describes why the keyword `auto` should be used in place of explicit type declarations. The advantages of auto are as follows:
 
