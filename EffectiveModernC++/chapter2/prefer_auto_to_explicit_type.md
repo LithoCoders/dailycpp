@@ -92,3 +92,26 @@ auto sz = v.size() // evaluates to std::vector<int>::size_type sz, correct type,
 
 
 ```
+
+## Question from ISLA
+
+Can auto be used in class declrations? The below snippet does not compile.
+
+```
+#include<iostream>
+
+class A
+{
+    public:
+         auto i = 0;
+};
+
+
+int main()
+{
+    A a1;
+    std::cout<<a1.i<<std::endl;
+}
+
+
+```
