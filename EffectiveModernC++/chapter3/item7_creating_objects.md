@@ -2,7 +2,7 @@ Initializing variables of C++ built-in types:
 ```c++
 int i = 0;
 int i{0};
-int i = {0};
+int i = {0}; // same as int i{0};
 int i(0);
 ```
 
@@ -14,8 +14,8 @@ vector<int> vv{4, 5, 6};
 Some useful knowledge:
 ```c++
 Tuna on; // default ctor is called
-Tuna on(); // error (it is a function returning Tuna ob)
-Tuna on{}; // possible using curly braces
+Tuna on(); // error (it is a function returning Tuna object, so-called 'most C++ vexing parse')
+Tuna on{}; // possible using curly braces, still default ctor
 Tuna ob2 = ob; // copy ctor is called
 Tuna ob3(ob); // copy ctor
 ob = ob2; // copy assignment operator
@@ -31,7 +31,7 @@ struct Tuna
 ```
 
 
-Be aware about implicit conversions:
+Be aware about implicit narrowing conversions:
 ```c++
 double x, y;
 int sum = x + y;
@@ -61,8 +61,8 @@ struct Tuna
 }
 
 Tuna ob(4, 6.7); // 2nd ctor is called
-Tuna ob{4, 6.7}; // ! 3rd ctor is called (implicit conversion is taking place)
-Tuna ob{4, true}; // ! 3rd ctor is called (implicit conversion is taking place)
+Tuna ob{4, 6.7}; // ! 3rd ctor is called (implicit conversion is taking place: int and double to long double)
+Tuna ob{4, true}; // ! 3rd ctor is called (implicit conversion is taking place: int and bool to long double)
 ```
 
 ```c++
@@ -71,7 +71,7 @@ struct Tuna
 	Tuna(int i, bool b);
 	Tuna(int i, double b);
 	Tuna(initializer_list<long double> ii);
-	operator float() const; // conversion of ob to float
+	operator float() const; // conversion of Tuna object to float
 	operator()(); // this is overloading of ()
 }
 ```
@@ -80,11 +80,11 @@ With that conversion, it is possible to have:
 
 ```c++
 // the function which requires a float input is defined:
-void func(float in1);
+void func(float para);
 
 Tuna ob(2, 4.5);
 // we can then call:
-func(ob);
+func(ob); 
 
 Tuna ob2(ob); //copy ctor is called
 Tuna ob2{ob}; // 3rd ctor is called (conversion from Tuna to float and then to long double is taking place)
