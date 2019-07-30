@@ -8,26 +8,69 @@ The author suggests to use `nullptr` in place of NULL or 0 to prevent the follwi
 1. To prevent overloading on pointer to integer types
 2. To Prevent ambiguity
 
-```c++
+```C++
 NULL -> either int or long depending on implementation
 0 -> int
 nullptr -> std::nullptr_t -> implicitly converts to all raw pointer types -> not an integral type
 std::nullptr_t -> nullptr -> circular definition
 ```
 
-```c++
+example 1.1 with only one function taking void*
+```C++
+void f(void*)
+{
+    std::cout << "f takes void*" << std::endl;
+    return;
+}
+    
+int main()
+{
+    f(0);
+    f(NULL);
+    f(nullptr);
+  	return 0;    
+}
+Output:
+f takes void*
+f takes void*
+f takes void*
+```
+example 1.2 with only two overloaded functions
+```C++
+void f(int)
+{
+    std::cout << "f takes int" << std::endl;
+    return;
+}
 
-void f(int);
-void f(bool);
-void f(void*);
+void f(void*)
+{
+    std::cout << "f takes void*" << std::endl;
+    return;
+}
+    
+int main()
+{
+    f(0); // fine. "f takes int"
+    f(NULL); // NOK because of ambigous overloaded function or might not compile, may call f(int)
+    f(nullptr); // fine. "f takes void*"
+  	return 0;    
+}
 
+prog.cc: In function 'int main()':
+prog.cc:20:11: error: call of overloaded 'f(NULL)' is ambiguous
+   20 |     f(NULL);
+      |           ^
+prog.cc:5:6: note: candidate: 'void f(int)'
+    5 | void f(int)
+      |      ^
+prog.cc:11:6: note: candidate: 'void f(void*)'
+   11 | void f(void*)
+      |      ^
 
-f(0); //calls f(int)
-
-f(NULL); //might not compile, but may call f(int)
-
-f(nullptr); //c++11, calls f(void*)
-
+```
+example 2 auto deduction
+```C++
 auto result = findRecord( /* arguments */ );
 
 if(result == 0){} // unclear what findRecord returns
@@ -35,10 +78,8 @@ if(result == 0){} // unclear what findRecord returns
 if(result == nullptr){} //result must be a ptr type
 
 ```
-
+example 3 Casting NULL and O to shared_ptr and unique_ptr
 ```c++
-
-
 #include<iostream>
 #include<memory>
 #include<mutex>
@@ -59,13 +100,13 @@ int f1(std::shared_ptr<Widget> spw)
 }
 double f2(std::unique_ptr<Widget> upw)
 {
-    MuxGuard g(m2); // lock mutex for f1
+    MuxGuard g(m2); // lock mutex for f2
     return 0.0;
 }
 
 bool f3(Widget* pw)
 {
-    MuxGuard g(m3); // lock mutex for f1
+    MuxGuard g(m3); // lock mutex for f3
     return 0;
 }
 
