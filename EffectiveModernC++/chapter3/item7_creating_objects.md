@@ -71,7 +71,7 @@ struct Tuna
 	Tuna(int i, bool b);
 	Tuna(int i, double b);
 	Tuna(initializer_list<long double> ii);
-	operator float() const; // conversion of Tuna object to float
+	operator float() const {return 3.0f;}; // conversion of Tuna object to a float of value 3.0 
 	operator()(); // this is overloading of ()
 }
 ```
@@ -83,10 +83,56 @@ With that conversion, it is possible to have:
 void func(float para);
 
 Tuna ob(2, 4.5);
-// we can then call:
+// we can then call func() because ob can be represented as a float
 func(ob); 
 
 Tuna ob2(ob); //copy ctor is called
-Tuna ob2{ob}; // 3rd ctor is called (conversion from Tuna to float and then to long double is taking place)
+Tuna ob2{ob}; // 3rd ctor is called (conversion from Tuna to float and then to std::initializer_list<long double> is taking place. std::initializer_list has only one value of 3.0 long double)
 ```
 
+std::initializer_list<bool> constructor
+```c++
+struct Tuna
+{
+	Tuna(int i, bool b);
+	Tuna(int i, double b);
+	Tuna(initializer_list<bool> ii);	
+}
+
+Tuna t{10, 5.0}; // does not work since braced initialization does not allow implict narrowing conversion from int(10) and double(5.0) to bools. !!! Compiler insists to use braced initialization if there is such a conversion. Conversion allowed or not is other problem!!! 
+```
+
+std::initializer_list<string> constructor
+```c++
+struct Tuna
+{
+	Tuna(int i, bool b);
+	Tuna(int i, double b);
+	Tuna(initializer_list<string> ii);	
+}	
+Tuna t{10, 5.0}; Call 2nd ctor. There’s no way to convert the types of the arguments in a braced initializer to the type in a std::initializer_list, compilers fall back on normal overload resolution.
+```
+
+```c++
+struct Tuna
+{
+	Tuna();
+	Tuna(initializer_list<string> ii);	
+}
+Tuna t; // default ctor
+Tuna t2{}; //default ctor too
+Tuna t3(); // vexing, not allowed!!! declaring a function
+Tuna t4({}); //call std::initializer_list ctor with empty list
+Tuna t5{{}}; this too
+```
+
+Exception with std::vector initialization. Documented in std document.
+```c++
+std::vector<int>	 vi (1,2);  // a vector of one element has default value of 2
+std::vector<int> 	 vil{1, 2}; // a vector of two elements have value of 1 and 2
+```
+
+variadict template
+```c++
+tbd
+```
