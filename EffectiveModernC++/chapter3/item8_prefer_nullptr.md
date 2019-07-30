@@ -134,7 +134,7 @@ int main()
 
 Intermediate result from cppinsights.io
 
-```c++
+```
 template<typename FuncType,typename MuxType,typename PtrType>
 auto lockAndCall(FuncType func,
 MuxType& mutex,
