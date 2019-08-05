@@ -39,8 +39,8 @@ int main()
     enum Color { red, blue, green };
     Color c = blue;
     
-    if( c < 10.0) { //implicit convert to doulbe
-        func(c); //implicit convert to size_t
+    if( c < 10.0) { //implicitly convert to doulbe
+        func(c); //implicitly convert to size_t
     }
     
     return 1;
@@ -58,7 +58,7 @@ void func(std::size_t x)
 int main()
 {
     enum class Color { red, blue, green };
-    Color c = blue;
+    Color c = Color::blue;
     
     if( c < 10.0) {
         func(c);
@@ -67,24 +67,20 @@ int main()
     return 1;
 }
 prog.cc: In function 'int main()':
-prog.cc:13:15: error: 'blue' was not declared in this scope
-   13 |     Color c = blue;
-      |               ^~~~
-prog.cc:15:11: error: no match for 'operator<' (operand types are 'main()::Color' and 'double')
-   15 |     if( c < 10.0) {
+prog.cc:14:11: error: no match for 'operator<' (operand types are 'main()::Color' and 'double')
+   14 |     if( c < 10.0) {
       |         ~ ^ ~~~~
       |         |   |
       |         |   double
       |         main()::Color
-prog.cc:16:14: error: cannot convert 'main()::Color' to 'std::size_t' {aka 'long unsigned int'}
-   16 |         func(c);
+prog.cc:15:14: error: cannot convert 'main()::Color' to 'std::size_t' {aka 'long unsigned int'}
+   15 |         func(c);
       |              ^
       |              |
       |              main()::Color
-prog.cc:3:23: note:   initializing argument 1 of 'void func(std::size_t)'
-    3 | void func(std::size_t x)
-      |           ~~~~~~~~~~~~^
-```
+prog.cc:2:23: note:   initializing argument 1 of 'void func(std::size_t)'
+    2 | void func(std::size_t x)
+      | ```
 Fix with static_cast
 ```C++
 int main()
@@ -114,7 +110,7 @@ prog.cc:6:10: error: use of enum 'Color' without previous declaration
 enum class Color; // OK. C++11
 ```
 
-forward-declaration for C++98 style enum.
+forward-declaration for C++98 style enum when explicitly specify the underlying type of enumerators
 
 ```C++
 enum Color: std::uint8_t;
