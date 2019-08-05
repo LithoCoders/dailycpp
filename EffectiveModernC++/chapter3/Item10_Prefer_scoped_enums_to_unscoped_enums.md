@@ -26,6 +26,7 @@ C++11 enumerators have scope inside braces
     Finish
 ```
 # Advantage 2: C++11 enumerators are much more strongly typed
+
 ```C++
 void func(std::size_t x)
 {
@@ -47,7 +48,8 @@ int main()
 }
 ```
 C++11 enumerators are strongly typed
-```C++11
+
+```C++
 void func(std::size_t x)
 {
     //do something
@@ -66,6 +68,7 @@ int main()
     
     return 1;
 }
+
 prog.cc: In function 'int main()':
 prog.cc:14:11: error: no match for 'operator<' (operand types are 'main()::Color' and 'double')
    14 |     if( c < 10.0) {
@@ -80,8 +83,9 @@ prog.cc:15:14: error: cannot convert 'main()::Color' to 'std::size_t' {aka 'long
       |              main()::Color
 prog.cc:2:23: note:   initializing argument 1 of 'void func(std::size_t)'
     2 | void func(std::size_t x)
-      |
+    
 ```
+
 Fix with static_cast
 ```C++
 int main()
