@@ -17,13 +17,12 @@ class basic_ios : public ios_base {
 public:
 …
 private:
-basic_ios(const basic_ios& ); // not defined
-basic_ios& operator=(const basic_ios&); // not defined
+  basic_ios(const basic_ios& ); // not defined
+  basic_ios& operator=(const basic_ios&); // not defined
 };
 ```
 
-In C++11, this is acheived by using `= delete`. In this case, the compilation will fail. This is an improvement as we catch the problem during
-compilation and not linking like in the case of C++98.
+In C++11, this is achieved by using `= delete`. In this case, the compilation will fail. This is an improvement as we catch the problem during compilation and not linking like in the case of C++98.
 
 ```c++
 
@@ -31,8 +30,8 @@ template <class charT, class traits = char_traits<charT> >
 class basic_ios : public ios_base {
 public:
 …
-basic_ios(const basic_ios& ) = delete;
-basic_ios& operator=(const basic_ios&) = delete;
+  basic_ios(const basic_ios&) = delete;
+  basic_ios& operator=(const basic_ios&) = delete;
 …
 };
 
@@ -40,26 +39,27 @@ basic_ios& operator=(const basic_ios&) = delete;
 
 ## Delete all functions
 
-By convention, in C++11, deleted functions are declared `public` as the author claims that it leads to better error messages in most compilers.
+By convention, in C++11, deleted functions are declared `public` as the author claims that it leads to better error messages in most compilers. This is because the compilers check visibility before 'delete' status of the called functions.
 
 Advantage of using delete function is that any function can be deleted.
 
 ```c++
-//non-sensical
+bool isLucky(int number); // original function
+
+//non-sensical to check luck of a character, boolean, and a double/float
 if (isLucky('a')) … 
 if (isLucky(true)) … 
 if (isLucky(3.5)) … 
 ```
 
-The above lines of code may compile even though they don't make sense  because C++ tries to convert everything to `int`. To prevent this, we can
-use delete.
+The above lines of code may compile even though they don't make sense  because C++ tries to convert everything to `int`. To prevent this, we can use delete.
 
 ```
 bool isLucky(int number); // original function
 bool isLucky(char) = delete; // reject chars
 bool isLucky(bool) = delete; // reject bools
-bool isLucky(double) = delete; // reject doubles and
-// floats
+bool isLucky(double) = delete; // reject doubles and floats
+
 if (isLucky('a')) … // error! call to deleted function
 if (isLucky(true)) … // error!
 if (isLucky(3.5f)) … // error!
@@ -92,10 +92,12 @@ public:
 …
 template<typename T>
 void processPointer(T* ptr)
-{ … }
+{ 
+  … 
+}
 private:
-template<> // error!
-void processPointer<void>(void*);
+  template<> // error!
+  void processPointer<void>(void*);
 };
 ```
 The above code snippet does not compile because different access level for specialization not allowed.
@@ -108,13 +110,15 @@ public:
 …
 template<typename T>
 void processPointer(T* ptr)
-{ … }
+{ 
+  … 
+}
 …
 };
-template<> // still
+template<>                                         // still
 void Widget::processPointer<void>(void*) = delete; // public,
-// but
-// deleted
+                                                   // but
+                                                   // deleted
 ```
 
 In this case, the compiler does not throw an error because in this case, you don't need a different access level for a specialization.
