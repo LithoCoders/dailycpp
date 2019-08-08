@@ -17,14 +17,14 @@ upb->doWork();                                            // call doWork through
 ```
 
 ## For overriding to occur, several requirements must be met:
-• The base class function must be virtual.
-• The base and derived function names must be identical (except in the case of destructors).
-• The parameter types of the base and derived functions must be identical.
-• The constness of the base and derived functions must be identical.
-• The return types and exception specifications of the base and derived functions
+1. The base class function must be virtual.
+2. The base and derived function names must be identical (except in the case of destructors).
+3. The parameter types of the base and derived functions must be identical.
+4. The constness of the base and derived functions must be identical.
+5. The return types and exception specifications of the base and derived functions
 must be compatible.
-additional requirement for C++11:
-• The functions’ reference qualifiers must be identical
+### additional requirement for C++11:
+6. The functions’ reference qualifiers must be identical
 
 ```c++
 class Widget {
