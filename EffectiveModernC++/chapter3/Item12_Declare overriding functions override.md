@@ -1,4 +1,4 @@
-#C++98 overriding 
+# C++98 overriding 
 ```c++
 class Base {
   public:
@@ -16,7 +16,7 @@ upb->doWork();                                            // call doWork through
                                                           // derived class function is invoked
 ```
 
-##For overriding to occur, several requirements must be met:
+## For overriding to occur, several requirements must be met:
 • The base class function must be virtual.
 • The base and derived function names must be identical (except in the case of destructors).
 • The parameter types of the base and derived functions must be identical.
@@ -67,6 +67,7 @@ None of these above functions from Base class is overrided. Because:
 • mf3 is lvalue-qualified in Base, but rvalue-qualified in Derived.
 • mf4 isn’t declared virtual in Base.
 
+# C++11 overriding
 C++11 gives you a way to make explicit that a derived class function is supposed to override a base class version: declare it override. 
 
 ```c++
