@@ -14,7 +14,8 @@ class Derived: public Base {
 std::unique_ptr<Base> upb = std::make_unique<Derived>(); //create base class pointer to derived class object;
 upb->doWork();                                            // call doWork through base class ptr; 
                                                           // derived class function is invoked
-```c++                                                          
+```
+
 ##For overriding to occur, several requirements must be met:
 • The base class function must be virtual.
 • The base and derived function names must be identical (except in the case of destructors).
@@ -38,11 +39,12 @@ Widget w;             // normal object (an lvalue)
 …
 w.doWork();            // calls Widget::doWork for lvalues, i.e., Widget::doWork &
 makeWidget().doWork(); // calls Widget::doWork for rvalues, i.e., Widget::doWork &&
-```c++
+```
 if a virtual function in a base class has a reference qualifier, derived class overrides of that function must have exactly 
 the same reference qualifier. If they don’t, the declared functions will still exist in the derived class,
 but they won’t override anything in the base class.
 
+```c++
 //How overriding could go wrong
 class Base {
   public:
@@ -58,7 +60,7 @@ class Derived: public Base {
     virtual void mf3() &&;
     void mf4() const;
 };
-```c++
+```
 None of these above functions from Base class is overrided. Because:
 • mf1 is declared const in Base, but not in Derived.
 • mf2 takes an int in Base, but an unsigned int in Derived.
