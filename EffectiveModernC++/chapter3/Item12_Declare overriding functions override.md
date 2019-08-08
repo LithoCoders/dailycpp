@@ -11,8 +11,8 @@ class Derived: public Base {
     …                      // ("virtual" is optional here)
 }; 
 
-std::unique_ptr<Base> upb = std::make_unique<Derived>(); //create base class pointer to derived class object;
-upb->doWork();                                            // call doWork through base class ptr; 
+std::unique_ptr<Base> upb = std::make_unique<Derived>();  // base class pointer to derived class object
+upb->doWork();                                            // call doWork through base class ptr
                                                           // derived class function is invoked
 ```
 
