@@ -62,10 +62,10 @@ class Derived: public Base {
 };
 ```
 None of these above functions from Base class is overrided. Because:
-• mf1 is declared const in Base, but not in Derived.
-• mf2 takes an int in Base, but an unsigned int in Derived.
-• mf3 is lvalue-qualified in Base, but rvalue-qualified in Derived.
-• mf4 isn’t declared virtual in Base.
+> - mf1 is declared const in Base, but not in Derived.
+> - mf2 takes an int in Base, but an unsigned int in Derived.
+> - mf3 is lvalue-qualified in Base, but rvalue-qualified in Derived.
+> - mf4 isn’t declared virtual in Base.
 
 # C++11 overriding
 C++11 gives you a way to make explicit that a derived class function is supposed to override a base class version: declare it override. 
