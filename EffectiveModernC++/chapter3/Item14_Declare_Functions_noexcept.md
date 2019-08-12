@@ -14,6 +14,7 @@ exception safe because if it fails during copy, the vector remains unchanged. In
 “move if you can, but copy if you must” strategy.
 
 ## std::swap
+The code below describes how conditional `noexcept` is implemented in std::swap.
 
 ```c++
 template <class T, size_t N>
@@ -29,8 +30,10 @@ noexcept(swap(second, p.second)));
 
 ```
 
+## Legacy 
+
 The code snippet declares `noexcept` even though `setup` and `cleanup` is not declared `noexcept`. `setup` and `cleanup` could be 
-legacy code that ex
+legacy code that is written in C.
 
 ```c++
 void setup(); // functions defined elsewhere
