@@ -101,8 +101,8 @@ class Widget{
         }
     private:
         mutable std::mutex m;
-        mutable std::atomic<bool> cacheValid {false};
-        mutable std::atomic<int> cachedValue;
+        mutable bool cacheValid {false};
+        mutable int cachedValue;
 };
 ```
 Things to remember
