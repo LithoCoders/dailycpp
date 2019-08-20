@@ -13,7 +13,7 @@ Note that T and ParamType can be different (due to const, volatile etc)
 Given: 
 ```c++
 template<typename T>
-void f(T & param);
+void f(T & param);  // ParamType is T &
 ```
 At call side:
 ```c++
@@ -23,7 +23,7 @@ f(x);	         // T: int, ParamType: int &
 At call side:
 ```c++
 const int cx = x; 
-f(cx);            // T: const int, ParamType: const int &
+f(cx);              // T: const int, ParamType: const int &
 ```
 At call side:
 ```c++
@@ -34,7 +34,7 @@ f(rx);              // T: const int, ParamType: const int &
 Given:
 ```c++
 template<typename T>
-void f(const T & param);
+void f(const T & param);   // ParamType is const T &
 ```
 ```c++
 f(x);               // T: int, ParamType: const int &
@@ -47,7 +47,7 @@ f(rx);              // T: int, ParamType: const int &
 Given:
 ```c++
 template<typename T>
-void f(T * param);
+void f(T * param);  // ParamType is T*
 ```
 ```c++
 int x = 27; 
@@ -60,7 +60,7 @@ f(px);              // T: const int, ParamType: const int *
 # Case 2: ParamType is universal reference
 ```c++
 template<typename T>
-void f(T && param);
+void f(T && param); // ParamType is T&&
 ```
 At call side:
 ```c++
