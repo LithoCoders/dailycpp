@@ -1,3 +1,4 @@
+Given a function template like this:
 ```c++
 template<typename T>
 void f(ParamType param)
@@ -6,11 +7,11 @@ At call side, when calling f(x) compiler will deduce type for:
 * T
 * ParamType
 
-Note that T and ParamType can be different (due to const, volatile etc)
+Note that T and ParamType can be different (due to const, volatile , & or * specifier)
 
 
-# Case 1: ParamType is reference or pointer
-Given: 
+# Case 1: ParamType is a reference or a pointer
+Given a function template with ParamType is a reference: 
 ```c++
 template<typename T>
 void f(T & param);  // ParamType is T &
