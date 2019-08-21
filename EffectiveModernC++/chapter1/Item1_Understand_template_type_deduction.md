@@ -9,7 +9,6 @@ At call side, when calling f(x) compiler will deduce type for:
 
 Note that T and ParamType can be different (due to const, volatile , & or * specifier)
 
-
 # Case 1: ParamType is a reference or a pointer
 Given a function template with ParamType is a reference: 
 ```c++
@@ -74,4 +73,51 @@ const int & rx = x;
 f(rx);              // T: const int &, ParamType: const int &
 
 f(27);              // T: int, ParamType: int &&
+```
+# Case 3: ParamType is neither a pointer nor a reference
+```c++
+template<typename T>
+void func(T param)   //ParamType is T
+{
+  //do a thing
+}
+
+int main()
+{
+  int x = 1;
+  func(x);
+  
+  const int cx = 2;
+  func(cx);
+  
+  const int& rx = 3;
+  func(rx);
+}
+```
+Output from C++ Insights shows no supprise when ParamType is deduced to T
+```c++
+template<typename T>
+void func(T param)
+{
+  //do a thing
+}
+
+/* First instantiated from: insights.cpp:10 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<int>(int param)
+{
+}
+#endif
+
+
+int main()
+{
+  int x = 1;
+  func(x);
+  const int cx = 2;
+  func(cx);
+  const int & rx = 3;
+  func(rx);
+}
 ```
