@@ -30,7 +30,44 @@ At call side:
 const int & rx = x; 
 f(rx);              // T: const int, ParamType: const int &
 ```
+Putting all together, output on C++Insights shows compiler deduce T and ParamType in two templates. 
+```c++
+template<typename T>
+void func(T& param)
+{
+  //do a thing
+}
 
+/* First instantiated from: insights.cpp:9 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<int>(int & param)   //f(x)
+{
+}
+#endif
+
+
+/* First instantiated from: insights.cpp:12 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<const int>(const int & param) //f(cx) and f(rx)
+{
+}
+#endif
+
+
+int main()
+{
+  int x = 1;
+  func(x);
+  const int cx = 2;
+  func(cx);
+  const int & rx = 3;
+  func(rx);
+  return 1;
+}
+
+```
 Given:
 ```c++
 template<typename T>
@@ -42,6 +79,37 @@ f(x);               // T: int, ParamType: const int &
 f(cx);              // T: int, ParamType: const int &
 
 f(rx);              // T: int, ParamType: const int &
+```
+
+Output on C++ Insights shows compiler always deduce to one form:
+
+```c++
+template<typename T>
+void func(const T& param)
+{
+  //do a thing
+}
+
+/* First instantiated from: insights.cpp:9 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<int>(const int & param)
+{
+}
+#endif
+
+
+int main()
+{
+  int x = 1;
+  func(x);
+  const int cx = 2;
+  func(cx);
+  const int & rx = 3;
+  func(rx);
+  return 1;
+}
+
 ```
 
 Given:
@@ -56,6 +124,44 @@ f(&x);              // T: int, ParamType: int *
 const int * px = &x; 
 f(px);              // T: const int, ParamType: const int *
 ```
+Output on C++ Insight:
+
+```c++
+template<typename T>
+void func(T* param)
+{
+  //do a thing
+}
+
+/* First instantiated from: insights.cpp:9 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<int>(int * param)
+{
+}
+#endif
+
+
+/* First instantiated from: insights.cpp:12 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<const int>(const int * param)
+{
+}
+#endif
+
+
+int main()
+{
+  int x = 1;
+  func(&x);
+  const int * px = &x;
+  func(px);
+  return 1;
+}
+
+```
+RULEs are: tbd
 
 # Case 2: ParamType is universal reference
 ```c++
