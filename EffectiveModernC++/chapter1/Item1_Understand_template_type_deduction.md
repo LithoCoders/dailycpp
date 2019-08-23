@@ -178,6 +178,33 @@ f(rx);              // T: const int &, ParamType: const int &
 
 f(27);              // T: int, ParamType: int &&
 ```
+Output from CppInsight
+```c++
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<int &>(int & param) // for f(x) and f(cx)
+{
+}
+#endif
+
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void func<const int &>(const int & param) // for f(cx) and f(rx)
+{
+}
+#endif
+
+template<>
+void func<int>(int && param)  // for f(27)
+{
+}
+#endif
+```
+
+Rules are:
+1. If expr is an lvalue, both T and ParamType are deduced to be lvalue references. 
+2. If expr is an rvalue, rules from case 1 apply
+
 # Case 3: ParamType is neither a pointer nor a reference
 ```c++
 template<typename T>
@@ -225,3 +252,7 @@ int main()
   func(rx);
 }
 ```
+Rules are:
+1. If expr’s type is a reference, ignore the reference part. 
+2. After that, if expr is const, ignore that too. If it is volatile, also ignore that.
+
