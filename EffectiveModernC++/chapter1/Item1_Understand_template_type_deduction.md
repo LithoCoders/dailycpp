@@ -30,7 +30,7 @@ At call side:
 const int & rx = x; 
 f(rx);              // T: const int, ParamType: const int &
 ```
-Putting all together, output on C++Insights shows compiler deduce T and ParamType in two templates. 
+Putting all together, output on C++Insights shows compiler deduce T and ParamType in two ways. 
 ```c++
 template<typename T>
 void func(T& param)
@@ -38,19 +38,17 @@ void func(T& param)
   //do a thing
 }
 
-/* First instantiated from: insights.cpp:9 */
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<int>(int & param)   //f(x)
+void func<int>(int & param)   //for f(x)
 {
 }
 #endif
 
 
-/* First instantiated from: insights.cpp:12 */
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<const int>(const int & param) //f(cx) and f(rx)
+void func<const int>(const int & param) //for f(cx) and f(rx)
 {
 }
 #endif
@@ -90,10 +88,9 @@ void func(const T& param)
   //do a thing
 }
 
-/* First instantiated from: insights.cpp:9 */
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<int>(const int & param)
+void func<int>(const int & param)   // T: int, ParamType: const int & for all three cases
 {
 }
 #endif
@@ -133,19 +130,17 @@ void func(T* param)
   //do a thing
 }
 
-/* First instantiated from: insights.cpp:9 */
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<int>(int * param)
+void func<int>(int * param)  // for f(&x) above
 {
 }
 #endif
 
 
-/* First instantiated from: insights.cpp:12 */
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<const int>(const int * param)
+void func<const int>(const int * param) // for f(px) above
 {
 }
 #endif
@@ -161,7 +156,10 @@ int main()
 }
 
 ```
-RULEs are: tbd
+RULEs are:
+1. If expr’s type is a reference, ignore the reference part
+2. Then pattern-match expr’s type against ParamType to determine T
+
 
 # Case 2: ParamType is universal reference
 ```c++
