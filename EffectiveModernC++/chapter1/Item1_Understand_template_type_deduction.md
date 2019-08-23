@@ -9,7 +9,7 @@ At call side, when calling f(x) compiler will deduce type for:
 
 Note that T and ParamType can be different (due to const, volatile , & or * specifier)
 
-# Case 1: ParamType is a reference or a pointer
+# Case 1: ParamType is a reference or a pointer but not a universal reference
 Given a function template with ParamType is a reference: 
 ```c++
 template<typename T>
