@@ -182,20 +182,20 @@ Output from CppInsight
 ```c++
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<int &>(int & param) // for f(x) and f(cx)
+void func<int &>(int & param) // for f(x)  - deduced to be lvalue reference
 {
 }
 #endif
 
 #ifdef INSIGHTS_USE_TEMPLATE
 template<>
-void func<const int &>(const int & param) // for f(cx) and f(rx)
+void func<const int &>(const int & param) // for f(cx) and f(rx) - deduced to be lvalue reference
 {
 }
 #endif
 
 template<>
-void func<int>(int && param)  // for f(27)
+void func<int>(int && param)  // for f(27) - rvalue, pattern-matching
 {
 }
 #endif
@@ -225,7 +225,7 @@ int main()
   func(rx);
 }
 ```
-Output from C++ Insights shows no supprise when ParamType is deduced to T
+Output from C++ Insights:
 ```c++
 template<typename T>
 void func(T param)
