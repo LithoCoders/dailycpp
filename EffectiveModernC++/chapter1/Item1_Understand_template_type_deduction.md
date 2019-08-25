@@ -256,3 +256,6 @@ Rules are:
 1. If expr’s type is a reference, ignore the reference part. 
 2. After that, if expr is const, ignore that too. If it is volatile, also ignore that.
 
+# Arragy arguments & function arguments
+tbd
+
