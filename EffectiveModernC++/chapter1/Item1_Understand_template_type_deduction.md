@@ -256,6 +256,83 @@ Rules are:
 1. If expr’s type is a reference, ignore the reference part. 
 2. After that, if expr is const, ignore that too. If it is volatile, also ignore that.
 
-# Arragy arguments & function arguments
-tbd
+## Array arguments & function arguments
+In this case, we consider function template with ParamType is an array/ reference to an array
 
+```c++
+
+template<typename T>
+void func(T param)
+{
+  //do a thing
+}
+
+template<typename T>
+void func2(T& param)
+{
+  //do other thing
+}
+
+int main()
+{
+  const char myname[] = "ABC DEF";
+  func(myname);
+  
+  func2(myname);
+}
+
+```
+An array decays into a pointer to its first element
+
+```c++
+
+template<>
+void func<const char *>(const char * param)
+{
+}
+
+template<>
+void func2<char const[8]>(char const (&param)[8])
+{
+}
+
+```
+We consider function template with ParamType is a function/ reference to a function
+
+```c++
+template<typename T>
+void func(T param)
+{
+  //do a thing
+}
+
+template<typename T>
+void func2(T& param)
+{
+  //do other thing
+}
+
+int makeMagics(double d);
+
+int main()
+{
+  
+  func(makeMagics);
+  
+  func2(makeMagics);
+}
+```
+
+Function types can decay into function pointers. Output from C++ Insight:
+
+```c++
+template<>
+void func<int (*)(double)>(int (*param)(double))
+{
+}
+
+template<>
+void func2<int (double)>(int (&param)(double))
+{
+}
+```
