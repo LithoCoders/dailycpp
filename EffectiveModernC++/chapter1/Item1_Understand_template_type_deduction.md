@@ -29,6 +29,7 @@ At call side:
 ```c++
 const int & rx = x; 
 f(rx);              // T: const int, ParamType: const int &
+                    // Note that T is not a reference due to patern matching
 ```
 Putting all together, output on C++Insights shows compiler deduce T and ParamType in two ways. 
 ```c++
