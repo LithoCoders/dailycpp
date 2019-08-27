@@ -338,7 +338,7 @@ void func2<int (double)>(int (&param)(double))
 }
 ```
 
-More on type deduction with function template taking array as parameter
+### More on type deduction with function template taking array as parameter
 
 ```c++
 template<class T>
@@ -352,17 +352,21 @@ void f(T* param)
 ```
 
 `const char name[] = "Hello world";`
-When you call `f(name)`, name is convertible to char* hence the `param` is deduced to be `char*` because an array type is trated like a pointer.
+When you call `f(name)`, name is convertible to char* hence the `param` is deduced to be `char*` because an array type is treated like a pointer.
 
 But the niche case is when we can declare reference to array (and yes that is possible). Only in that case the type is deduced to be `const char[]`
 
 Example:
 
 ```c++
-
 #include <cstdio>
 #include<iostream>
 using namespace std;
+
+template<typename T>
+void f(T param){
+  return;
+}
 
 template<typename T>
 void f_ptr(T* param){
@@ -382,7 +386,8 @@ void f_reference(T& param){
 
 int main()
 {
-	const char name[] = "hello world";
+  const char name[] = "hello world";
+  f(name);
   f_array(name);
   f_reference(name);
   f_ptr(name);
@@ -397,45 +402,45 @@ becomes
 using namespace std;
 
 template<typename T>
-void f_ptr(T* param){
-  return; 
+void f(T param){
+  return;
 }
-
-/* First instantiated from: insights.cpp:26 */
-template<>
-void f_ptr<const char>(const char * param)
-{
+template<>                                       
+void f<const char *>(const char * param)     // T: const char*, ParamType: const char* 
+{                                            // because array is decayed to pointer, then patern-matching
   return;
 }
 
+
+template<typename T>
+void f_ptr(T* param){
+  return; 
+}
+template<>
+void f_ptr<const char>(const char * param)   // T: const char, ParamType: const char*
+{                                            // because array is decayed to pointer, then patern-matching. Thus, T is no longer a pointer
+  return;
+}
 
 
 template<typename T>
 void f_array(T param[]){
   return; 
 }
-
-/* First instantiated from: insights.cpp:24 */
-
 template<>
-void f_array<const char>(const char * param)
-{
+void f_array<const char>(const char * param) // T: const char, ParamType: const char*
+{                                            // because array is decayed to pointer, but T is not a pointer
   return;
 }
-
-
 
 
 template<typename T>
 void f_reference(T& param){
   return; 
 }
-
-/* First instantiated from: insights.cpp:25 */
-
 template<>
-void f_reference<char const[12]>(char const (&param)[12])
-{
+void f_reference<char const[12]>(char const (&param)[12])  // T: char const[12], ParamType: char const & [12]
+{                                                          // because array is decayed to pointer, but T is not a pointer
   return;
 }
 
@@ -443,7 +448,8 @@ void f_reference<char const[12]>(char const (&param)[12])
 
 int main()
 {
-  const char name[12] = "hello world";
+  const char name[] = "hello world";
+  f(name);
   f_array(name);
   f_reference(name);
   f_ptr(name);
