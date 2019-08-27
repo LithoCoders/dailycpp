@@ -337,3 +337,117 @@ void func2<int (double)>(int (&param)(double))
 {
 }
 ```
+
+More on type deduction with function template taking array as parameter
+
+```c++
+template<class T>
+void f(T param[])
+```
+compiles is that there is no such a thing as array function parameters in C++. So that is equivalent to
+
+```c++
+template<class T>
+void f(T* param)
+```
+
+`const char name[] = "Hello world";`
+When you call `f(name)`, name is convertible to char* hence the `param` is deduced to be `char*` because an array type is trated like a pointer.
+
+But the niche case is when we can declare reference to array (and yes that is possible). Only in that case the type is deduced to be `const char[]`
+
+Example:
+
+```c++
+
+#include <cstdio>
+#include<iostream>
+using namespace std;
+
+template<typename T>
+void f_ptr(T* param){
+  return; 
+}
+
+template<typename T>
+void f_array(T param[]){
+  return; 
+}
+
+
+template<typename T>
+void f_reference(T& param){
+  return; 
+}
+
+int main()
+{
+	const char name[] = "hello world";
+  f_array(name);
+  f_reference(name);
+  f_ptr(name);
+  return 0;
+}
+```
+becomes
+
+```c++
+#include <cstdio>
+#include<iostream>
+using namespace std;
+
+template<typename T>
+void f_ptr(T* param){
+  return; 
+}
+
+/* First instantiated from: insights.cpp:26 */
+template<>
+void f_ptr<const char>(const char * param)
+{
+  return;
+}
+
+
+
+template<typename T>
+void f_array(T param[]){
+  return; 
+}
+
+/* First instantiated from: insights.cpp:24 */
+
+template<>
+void f_array<const char>(const char * param)
+{
+  return;
+}
+
+
+
+
+template<typename T>
+void f_reference(T& param){
+  return; 
+}
+
+/* First instantiated from: insights.cpp:25 */
+
+template<>
+void f_reference<char const[12]>(char const (&param)[12])
+{
+  return;
+}
+
+
+
+int main()
+{
+  const char name[12] = "hello world";
+  f_array(name);
+  f_reference(name);
+  f_ptr(name);
+  return 0;
+}
+```
+
