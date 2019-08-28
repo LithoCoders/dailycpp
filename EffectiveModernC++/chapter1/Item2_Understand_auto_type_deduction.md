@@ -1,8 +1,8 @@
 # auto
-Template deduction is about deducting types for functions parameters involving templates. `auto` is a bit different because you do not use auto with templates. Interestingly the difference is almost null becuase auto works more or less the same way template deduction does.
+Template deduction is about deducting types for functions parameters involving templates. `auto` is a bit different because you do not use auto with templates. Interestingly the difference is almost null because auto works more or less the same way template deduction does.
 
 
-when you delcare `auto a = 33` they keyworkd `auto` is like `T` in a template. 
+when you delcare `auto a = 33` the keyworkd `auto` is like `T` in a template. 
 
 ```c++
 auto a = 3;
@@ -23,16 +23,33 @@ void f(const T& a);
 ```
 
 
-
 ## `auto&&`
 ```c++
-int x = 3;
-const int cx = 5;
-auto&& a = x //=> what type is a?
-auto&& a = 3 //=> what type is a?
-auto&& a = cx //=> what type is a?
+	int x = 1;
+  	const int cx = 2;
+  	const int& rx = 3;
+	int&& ux = 2;
+  
+  	auto&& a3 = 3;          //what is type of a3 ?
+   	auto&& ax = x;		//what is type of ax ?
+	auto&& acx = cx; 	//what is type of acx ?
+  	auto&& arx = rx;  	//what is type of arx ?
+	auto&& aux = ux;        //what is type of aux ?
 ```
+Output on C++ Insights shows that rules from Item1.Case2 work as expected
 
+```c+++
+	int x = 1;
+  	const int cx = 2;
+  	const int & rx = 3;
+  	int && ux = 2;
+	
+	int && a3 = 3;          //3 is a rvalue thus a3 is also a3 rvalue
+  	int & ax = x;		//x is a lvalue thus ax is also ax lvalue
+  	const int & acx = cx;	//cx is a lvalue thus acx is a lvalue, `const` from patern matching
+  	const int & arx = rx;	//rx is a lvalue, arx is a lvalue
+	int & aux = ux;         //why ? ux is a rvalue ?
+```
 ## arrays:
 
 ```c++
