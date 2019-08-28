@@ -59,9 +59,69 @@ auto c = {3};
 auto b{22};
 ```
 
-be careful when you use the `{}` ways with auto because the type can end up being `std::initializer_list<T>`.
+be careful when you use the `{}` ways with auto because the type can end up being `std::initializer_list<T>`. For examples (from ISLA):
+example 1: `auto` deduced to `std::initializer_list` of integer. 
 
-################ from ISLA std::initializer_list ###################
+```c++
+#include <initializer_list>
+
+template<typename T> 
+void f(T param); 
+
+template<typename T>
+void f_list(std::initializer_list<T> initList);
+
+int main()
+{
+	auto x = { 11, 23, 9 };
+  	f(x);
+   f_list(x);  	
+}
+
+```
+Output on C++ Insight shows
+
+```c++
+#include <initializer_list>
+
+template<typename T> 
+void f(T param); 
+
+template<typename T>
+void f_list(std::initializer_list<T> initList);
+
+int main()
+{
+  std::initializer_list<int> x = std::initializer_list<int>{11, 23, 9};   // auto is deduced to std::initializer_list<int>
+  f(std::initializer_list<int>(x));                                       // ParamType and T also std::initializer_list<int>     
+  f_list(std::initializer_list<int>(x));                                  // ParamType: std::initializer_list and T: int 
+}
+```
+example 2: Passing initializer_list to function template does not work
+
+```c++
+#include <initializer_list>
+
+template<typename T> 
+void f(T param); 
+
+template<typename T>
+void f_list(std::initializer_list<T> initList);
+
+int main()
+{
+  	f({ 11, 23, 9 }); 
+}
+
+/home/insights/insights.cpp:4:6: note: candidate template ignored: couldn't infer template argument 'T'
+void f(T param); 
+     ^
+1 error generated.
+Error while processing /home/insights/insights.cpp.
+```
+example 3: f_list() just works.
+
+
 #include <cstdio>
 #include <initializer_list>
 
