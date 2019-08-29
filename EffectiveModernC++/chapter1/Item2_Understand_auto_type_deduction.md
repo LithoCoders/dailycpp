@@ -98,7 +98,8 @@ int func(const int a, const double b)
 int main()
 {
   using FuncPtr_7 = int (*)(int, double);
-  FuncPtr_7 func1 = func;                       // funct1 is a pointer to a type of func
+  FuncPtr_7 func1 = func;                       // funct1 is a pointer to a type of func. 
+  						// !!! `const` from input parameters disappeared !!!
   int (&func2)(int, double) = func;		// funct2 is a reference to a type of func
 }
 
