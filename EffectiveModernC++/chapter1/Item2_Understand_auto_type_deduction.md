@@ -104,7 +104,7 @@ int main()
 }
 
 ```
-# Exception case: auto type deduction considers `{}` as std::initializer_list but template type deduction does not
+# Exception case: `auto` type deduction considers `{}` as `std::initializer_list` but template type deduction does not
 In C++ you can initialize stuff in 4 ways
 
 ```c++
@@ -113,7 +113,7 @@ auto b(22);
 auto c = {3};
 auto b{22};
 ```
-Be careful when you use the `{}` ways with auto because the type can end up being `std::initializer_list<T>`. For examples (from ISLA):
+Be careful when you use the `{}` ways with `auto` because the type can end up being `std::initializer_list<T>`. For examples (from ISLA):
 
 ## example 1: `auto` deduced to `std::initializer_list` of integer. 
 
@@ -130,7 +130,7 @@ int main()
 {
 	auto x = { 11, 23, 9 };
   	f(x);
-   f_list(x);  	
+   	f_list(x);  	
 }
 
 ```
@@ -152,7 +152,7 @@ int main()
   f_list(std::initializer_list<int>(x));                                  // ParamType: std::initializer_list and T: int 
 }
 ```
-## example 2: Passing initializer_list to function template does not work
+## example 2: Passing a `initializer_list` to function template does not work
 
 ```c++
 #include <initializer_list>
@@ -174,43 +174,45 @@ void f(T param);
 1 error generated.
 Error while processing /home/insights/insights.cpp.
 ```
-## example 3: f_list() just works.
+## example 3: f_list() just works 
+```c++
 
-#include <cstdio>
 #include <initializer_list>
 
-template<typename T> // template with parameter
-void f(T param); // declaration equivalent to x's declaration
+template<typename T>
+void f_list(std::initializer_list<T> initList); //explicitly requires a `std::initializer_list`
 
-
-/*template<typename T>
-void f_list(std::initializer_list<T> initList);
-*
-
-/*
-auto createInitList()
-{
-return { 1, 2, 3 }; // error: can't deduce type for { 1, 2, 3 }
-}
-
-std::vector<int> v;
-auto resetV =
-[&v](const auto& newValue) { v = newValue; }; // C++14 type for { 1, 2, 3 }
-resetV({ 1, 2, 3 });
-*/
 int main()
 {
-   //Initialization list with different types
-//auto x5 = { 1, 2, 3.0 }; 
+  auto x = {1, 2, 3};
+  f_list(x);
+  f_list({ 11, 23, 9 }); // T deduced as int, and initList's type is std::initializer_list<int>
+}
+```
+Output on C++ Insight:
+```c++
 
+#include <initializer_list>
 
-//Using Explicit Initialization list for template function call
-/*
-auto x = { 11, 23, 9 }; // x's type is std::initializer_list<int>
-f({ 11, 23, 9 }); 
-*/
+template<typename T>
+void f_list(std::initializer_list<T> initList); 
 
-//f_list({ 11, 23, 9 }); // T deduced as int, and initList's type is std::initializer_list<int>
+int main()
+{
+  std::initializer_list<int> x = std::initializer_list<int>{1, 2, 3};
+  f_list(std::initializer_list<int>(x));
+  f_list(std::initializer_list<int>{11, 23, 9});
+}
+```
+
+## example 4: `auto` can not deduce the return type
+```c++
+auto createInitList()
+{
+	return { 1, 2, 3 }; // error: can't deduce type for { 1, 2, 3 }
 }
 
-
+error: cannot deduce return type from initializer list
+return { 1, 2, 3 }; // error: can't deduce type for { 1, 2, 3 }
+```
+todo: try trailing decltype
