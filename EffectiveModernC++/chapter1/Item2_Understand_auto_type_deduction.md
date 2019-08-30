@@ -206,6 +206,35 @@ int main()
 ```
 
 ## example 4: `auto` can not deduce the return type
+`auto` can deduce type to an int, but not a std::initializer_list
+
+It is OK to do this:
+
+```c++
+auto createInt()
+{
+  return 1;
+}
+int main()
+{
+	auto a = createInt();
+}
+```
+`auto` deduced to `int`
+```c++
+int createInt()
+{
+  return 1;
+}
+
+int main()
+{
+  int a = createInt();
+}
+```
+
+But not this
+
 ```c++
 auto createInitList()
 {
