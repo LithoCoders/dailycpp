@@ -205,7 +205,7 @@ int main()
 }
 ```
 
-## example 4: `auto` can not deduce the return type
+## example 4: `auto` can not deduce the return type of a `std::initializer_list`
 `auto` can deduce type to an int, but not a std::initializer_list
 
 It is OK to do this:
