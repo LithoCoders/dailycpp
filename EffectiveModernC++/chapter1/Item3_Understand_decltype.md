@@ -24,11 +24,11 @@ int main()
                             	 // decltype(f) bool(const Tuna &)  
   decltype(Tuna::a) dta = 10;
   
-  std::vector<int> v = {1, 2, 3}; // decltype(vv) is vector<int>
-  decltype(v) dv;
+  std::vector<int> v = {1};      // decltype(vv) is vector<int>
+  decltype(v)     dv = {1};
   decltype(v[0]) dv0 = t.a;       // decltype(v[0]) is int&
   
-  std::deque<int> d;  		  // decltype(aa[0]) is int&
+  std::deque<int> d;  		  
   decltype(d) dd;
 }
 ```
@@ -40,18 +40,20 @@ Output on C++ Insight shows:
   
   Tuna t = Tuna();
   Tuna dt = Tuna();
-  bool f(const Tuna & ob);  
+  bool f(const Tuna & ob);
   int dta = 10;
   
-  std::vector<int> v 
-        = std::vector<int, std::allocator<int> >{std::initializer_list<int>{1, 2, 3}, std::allocator<int>()};
-  decltype(v) dv = std::vector<int, std::allocator<int> >();
+  std::vector<int> v = 
+  	std::vector<int, std::allocator<int> >{std::initializer_list<int>{1}, std::allocator<int>()};
+  decltype(v)     dv = 
+  	std::vector<int, std::allocator<int> >{std::initializer_list<int>{1}, std::allocator<int>()};
   __gnu_cxx::__alloc_traits<std::allocator<int> >::value_type & dv0 = t.a;
+ 
   std::deque<int> d = std::deque<int, std::allocator<int> >();
-  decltype(d) dd = std::deque<int, std::allocator<int> >();
+  decltype(d)    dd = std::deque<int, std::allocator<int> >();
 ```
 But exception with vector of bool:
-```c++
+```c++       
   std::vector<bool> vb = {true, false}; 		  //decltype(vb[0]) is bool (!not bool&)
   decltype(vb[0]) dvb = false;
   
@@ -60,8 +62,8 @@ But exception with vector of bool:
   decltype(vb[0]) dvb = false;
                   ^     ~~~~~
 ```
-This is because decltype of  vb[0] is a brand new object bool not a reference to bool so that you can not assign `dvb` to false as above.
-This lead to one problem we try to solve a bit later.
+This is because decltype of  `vb[0]` is a brand new object `bool` not a reference to `bool` so that you can not assign `dvb` to false as above. This leads to one problem we try to solve a bit later.
+
 Problem: write a function that takes a container and an index and return the result of the indexing operation. The return type of the function should be the same as the type returned by the indexing operation, can be T or T&
 This is where decltype takes place. In C++11, the primary use for decltype is declaring function templates where the functions’ return type depends on its parameter types.
 
