@@ -191,7 +191,7 @@ int main()
 }
 
 ```
-It shows doMagic return sometimes `int&` sometimes `bool` or `std::Bit_reference`. This solves the problem above, i.e., returning the same type as indexing operation on container. 
+It shows `doMagic` returns sometimes `int&` sometimes `bool` (`std::Bit_reference`). This solves the problem above, i.e., returning the same type as indexing operation on container. 
 
 **Things to Remmember:**
 
