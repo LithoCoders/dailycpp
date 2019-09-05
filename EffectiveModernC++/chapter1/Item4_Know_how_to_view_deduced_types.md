@@ -1,5 +1,5 @@
-# How to view deduced types
-The acutal types deduced by the compiler when using generic code (templates) or auto is not visible to the developer. But how can we force to see what type the compiler actually choose for us? What tool can we use?
+# How to view deduced types ?
+The actual types deduced by the compiler when using generic code (templates) or auto is not visible to the developer. But how can we force to see what type the compiler actually choose for us? What tool can we use?
 There are three possibilities:
 
 1. Editors
@@ -7,7 +7,7 @@ There are three possibilities:
 3. At runtime
 
 ## Editors
-Some editor (like eclipse) shows hints on the type that the compiler is choosing. The IDE does that by using a compiler hence if the code is not in a state close to being compilable you get not hints. Also note that for complex generic code the decuded type can be very complex to read and hence the info given by the ide might not be super helpful.
+Some editor (like eclipse) shows hints on the type that the compiler is choosing. The IDE does that by using a compiler hence if the code is not in a state close to being compilable you can't get hints. Also note that for complex generic code the decuded type can be very complex to read and hence the info given by the ide might not be super helpful.
 
 ## Compiler diagnostics 
 
@@ -17,7 +17,6 @@ The compiler internally knows what type it is using, so why don't force the comp
 One easy way to achieve it is by **only declaring** a template structure and then trying to instantiate it with the **decltype of a variable** we would like to know the type.
 
 ```c++
-#include <cassert>
 #include <iostream>
 
 using namespace std;
@@ -26,7 +25,7 @@ class TYPEOF;
 
 int main(){
 
-  const auto* p = &cout;
+  const auto* p = &std::cout;
   TYPEOF<decltype(p)> a;
   return 0;
 }
@@ -68,9 +67,16 @@ int main(){
 which results in 
 
 ```bash
-/tmp/ccRol0So.o: In function `main':
-prog.cc:(.text+0x18): undefined reference to `void type_info_f<std::ostream const*>(std::ostream const*)'
-collect2: error: ld returned 1 exit status
+prog.cc: In function 'int main()':
+prog.cc:9:16: error: cannot bind rvalue reference of type 'const int&&' to lvalue of type 'const int'
+    9 |   TYPEOF_ERROR(p);
+      |                ^
+prog.cc:4:55: note: in definition of macro 'TYPEOF_ERROR'
+    4 | #define TYPEOF_ERROR(var) (type_info_f<decltype(var)>(var))
+      |                                                       ^~~
+prog.cc:2:20: note:   initializing argument 1 of 'void type_info_f(T) [with T = const int&&]'
+    2 | void type_info_f(T type);
+      |                  ~~^~~~
 ```
 
 ## Runtime  Diagnostic
