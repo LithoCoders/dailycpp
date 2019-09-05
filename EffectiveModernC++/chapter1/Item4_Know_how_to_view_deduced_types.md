@@ -1,3 +1,5 @@
+Small talk: Git is lying :O, this thread was first created by D. then renamed by M. suddenly M. is one contributor
+
 # How to view deduced types ?
 The actual types deduced by the compiler when using generic code (templates) or auto is not visible to the developer. But how can we force to see what type the compiler actually choose for us? What tool can we use?
 There are three possibilities:
