@@ -27,18 +27,32 @@ must be compatible.
 6. The functions’ reference qualifiers must be identical
 
 ```c++
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
+
 class Widget {
   public:
-    …
-    void doWork() &;  // this version of doWork applies only when *this is an lvalue. !Interesting syntax!
-    void doWork() &&; // this version of doWork applies only when *this is an rvalue. !Interesing syntax!
+    void doWork() & { cout << "&" << endl; }  // this version of doWork applies only when *this is an lvalue. !Interesting syntax!
+    void doWork() && { cout << "&&" << endl; } // this version of doWork applies only when *this is an rvalue. !Interesing syntax!
 }; 
-…
-Widget makeWidget();  // factory function (returns rvalue)
-Widget w;             // normal object (an lvalue)
-…
-w.doWork();            // calls Widget::doWork for lvalues, i.e., Widget::doWork &
-makeWidget().doWork(); // calls Widget::doWork for rvalues, i.e., Widget::doWork &&
+
+Widget makeWidget()
+{
+    Widget ob;
+    return ob;
+}
+
+int main()
+{
+    std::cout << "Hello, Wandbox!" << std::endl;
+    Widget makeWidget();  // factory function (returns rvalue)
+    Widget w;             // normal object (an lvalue)
+
+    w.doWork();            // calls Widget::doWork for lvalues, i.e., Widget::doWork &
+    makeWidget().doWork();
+}
 ```
 if a virtual function in a base class has a reference qualifier, derived class overrides of that function must have exactly 
 the same reference qualifier. If they don’t, the declared functions will still exist in the derived class,
