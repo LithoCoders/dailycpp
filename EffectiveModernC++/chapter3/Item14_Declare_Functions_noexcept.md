@@ -5,6 +5,8 @@ This item is not very useful. I really don't understand the point the author is 
 The author claims that `noexcept` is useful in the following ways:
 1. It could provide info that is useful for the caller.
 2. It allows the compiler to generate better object code. 
+
+
 int f(int x) throw(); // no exceptions from f: C++98 style
 int f(int x) noexcept; // no exceptions from f: C++11 style
 If, at runtime, an exception leaves f, f’s exception specification is violated. With the
