@@ -58,7 +58,7 @@ Objects are constants and known during compilation are **privileged** because of
 
 Example for enummerators, alignment specifiers: todo
 
-## `const` vs. `constexpr`
+## `const` vs. `constexpr` ?
 
 `constexpr` objects are `const`s but not the other way around. It means, `constexpr` objects are constant and known during complation but `const` can be not known during compilation
 
@@ -106,6 +106,36 @@ Finish
 ```
 
 # `constexpr` functions
+Rules:
+to-be-copied
 
+```c++
+#include <array>
+
+constexpr int pow11(int base, unsigned exp) noexcept
+{
+    return (exp == 0 ? 1: base * pow11(base, exp -1)); //C++11 allows no more than a 'return' statement
+}
+
+//C++14 allows more statements
+constexpr int pow14(int base, unsigned exp) noexcept
+{
+    auto result = 1;
+    for(unsigned i = 0; i < exp; ++i)
+            result *= base;
+    return result;
+}
+
+int main()
+{
+    std::array<int, pow11(2, 5)> result11;
+    
+    std::array<int, pow14(2, 5)> result14;
+    
+    return 0;
+}
+
+```
+In above example, `pow11` and `pow14` return compile-time results when called with compile-time values.
 
 
