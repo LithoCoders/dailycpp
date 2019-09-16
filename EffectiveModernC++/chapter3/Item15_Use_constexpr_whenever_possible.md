@@ -106,8 +106,7 @@ Finish
 ```
 
 # `constexpr` functions
-Rules:
-to-be-copied
+## Rules: to-be-copied
 
 ```c++
 #include <array>
@@ -138,4 +137,109 @@ int main()
 ```
 In above example, `pow11` and `pow14` return compile-time results when called with compile-time values.
 
+## `constexpr` ctor, setter and object
 
+```c++
+#include <array>
+
+class Point
+{
+    public:
+        constexpr Point(double xVal = 0, double yVal = 0) noexcept : x(xVal), y(yVal) {}    
+    
+        constexpr double xValue() const noexcept { return x; }
+        constexpr double yValue() const noexcept { return y; }
+    
+        void setX(double newX) noexcept { x = newX; }
+        void setY(double newY) noexcept { y = newY; }
+    
+    private:
+        double x, y;
+};
+
+constexpr Point midpoint(const Point& p1, const Point& p2) noexcept
+{
+    return { (p1.xValue() + p2.xValue())/2, (p1.yValue() + p2.yValue())/2 }; // interesting, no need to invoke ctor ?
+}
+
+int main()
+{
+    constexpr Point p1(1.2, 3.4);
+    constexpr Point p2(5.6, 7.8);
+    
+    constexpr auto mid = midpoint(p1, p2);
+    
+    std::array<int, static_cast<int>(mid.xValue()*2)> amazing_array;
+    
+    return 0;
+}
+```
+This shows a nice example from moving some computations done at runtime can be done at compile time.
+* At compile time: constructor -> object -> setter -> midpoint function -> midpoint object
+* At runtime: amazing_array
+
+In the above example, setters can not be `constexpr` functions in C++11 because it modifies object, and they have `void` return type (`void` is not a literal type in C++11) but this is lifted up in C++14.
+
+```c++
+#include <array>
+
+class Point
+{
+    public:
+        constexpr Point(double xVal = 0, double yVal = 0) noexcept : x(xVal), y(yVal) {}    
+    
+        constexpr double xValue() const noexcept { return x; }
+        constexpr double yValue() const noexcept { return y; }
+    
+        constexpr void setX(double newX) noexcept { x = newX; } //only C++14
+        constexpr void setY(double newY) noexcept { y = newY; } //only C++14
+    
+    private:
+        double x, y;
+};
+
+constexpr Point midpoint(const Point& p1, const Point& p2) noexcept
+{
+    return { (p1.xValue() + p2.xValue())/2, (p1.yValue() + p2.yValue())/2 }; // interesting, no need to invoke ctor ?
+}
+
+constexpr Point reflection(const Point& p) noexcept
+{
+    Point result;                   //non-const Point
+    
+    result.setX(-p.xValue());
+    result.setY(-p.yValue());
+    
+    return result;                  //return a copy of it
+}
+
+int main()
+{
+    constexpr Point p1(1.2, 3.4);
+    constexpr Point p2(5.6, 7.8);
+    
+    constexpr auto mid = midpoint(p1, p2);
+    constexpr auto reflectedMid = reflection(mid);
+    
+    std::array<int, static_cast<int>(mid.xValue()*2)> amazing_array;
+    
+    return 0;
+}
+```
+
+The strange thing is only `reflectedMid` is complained to not used, but not other points. Is it a compile-time object ?
+```c++
+Start
+
+prog.cc: In function 'int main()':
+prog.cc:39:20: warning: variable 'reflectedMid' set but not used [-Wunused-but-set-variable]
+   39 |     constexpr auto reflectedMid = reflection(mid);
+      |                    ^~~~~~~~~~~~
+prog.cc:41:55: warning: unused variable 'amazing_array' [-Wunused-variable]
+   41 |     std::array<int, static_cast<int>(mid.xValue()*2)> amazing_array;
+      |                                                       ^~~~~~~~~~~~~
+
+0
+
+Finish
+```
