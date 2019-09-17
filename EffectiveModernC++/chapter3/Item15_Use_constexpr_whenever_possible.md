@@ -106,7 +106,10 @@ Finish
 ```
 
 # `constexpr` functions
-## Rules: to-be-copied
+## Rules: 
+* `constexpr` functions can be used in contexts that demand compile-time constants. If the values of the arguments you pass to a `constexpr` function in such a context are known during compilation, the result will be computed during compilation. If any of the arguments’ values is not known during compilation, your code will be rejected. 
+
+* When a `constexpr` function is called with one or more values that are not known during compilation, it acts like a normal function, computing its result at runtime. This means you don’t need two functions to perform the same operation, one for compile-time constants and one for all other values. The `constexpr` function does it all.
 
 ```c++
 #include <array>
