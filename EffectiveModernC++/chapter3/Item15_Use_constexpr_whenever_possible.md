@@ -29,7 +29,7 @@ prog.cc:5:20: warning: unused variable 'arraySize' [-Wunused-variable]
 
 Finish
 ```
-The code fails because `sz` is not a constant. So, let make it constant.
+The code fails because `sz` is not a constant. So, let's make it constant.
 
 ```c++
 #include <array>
@@ -56,7 +56,32 @@ Objects are constants and known during compilation are **privileged** because of
   * alignment specifiers
   * and more
 
-Example for enummerators, alignment specifiers: todo
+??? Just a question: why only in *integral constant expression* ? No doubles, no floats, no booleans?
+
+Example using `constexpr` integer to start enummerators
+
+```
+#include <iostream>
+
+int main()
+{
+    constexpr int start = 4;
+    enum class Color {red = start, blue, green};    
+    Color c = Color::green;
+    std::cout << "start " << start << "\n" << "green " << static_cast<int>(c) ;    
+    return 0;
+}
+Start
+
+start 4
+green 6
+
+0
+
+Finish
+```
+
+Example using `constexpr` with alignment specifiers: todo
 
 ## `const` vs. `constexpr` ?
 
