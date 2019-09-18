@@ -1,4 +1,5 @@
-# Make const member functions thread safe in a concurrent context
+# `const` member functions in a concurrent context
+As you know `const` member functions shall not modify the object, but in the following example, we consider a `const` member function which modifies a shared resource. This might be a good practise that you need or don't fall into this situation.
 
 ```c++
 #include<vector>
@@ -8,21 +9,21 @@ class Polynomial {
     public:
         using RootsType = std::vector<double>;
     
-        RootsType computeRoots() const  // this function is expensive, we want it to be run one time, store results to rootValues.
-                                        // it does not modify roots, so, we make it 'const'
+        RootsType computeRoots() const  // this function is expensive, we want it to be run one time
+                                        // it does modify roots, but we still make it 'const'
         {
             std::lock_guard<std::mutex> g(m);  // to avoid data race
             if(!rootsAreValid){
                 //expensive calculation here
                 //stores values in rootValues
-                rootValues = RootsType{1.2, 3.4};
-                rootsAreValid = true; // set the flag, roots are stored at cache                
+                rootValues = RootsType{1.2, 3.4};  //for shake to make it compile
+                rootsAreValid = true;              // set the flag, roots are stored at cache                
             }
             return rootValues;
         }// implicitly unlock m
     
     private:
-        mutable std::mutex m;                 // using mutex to avoid undefined results due to multiple threads call on one object
+        mutable std::mutex m;                 // to avoid undefined results due to multiple threads call on one object
         mutable bool rootsAreValid {false} ;  // using 'mutable' so that it can be modified in a 'const' function
         mutable RootsType rootValues{};       // using 'mutable' together with mutex is so called, 'M&M' rule
 };
@@ -32,17 +33,24 @@ int main()
 {
     Polynomial poly_obj;
     std::vector<double> roots = poly_obj.computeRoots();    
-    return 1;
+    return 0;
 }
 
 ```
+Let us consider the roles of each element:
+* `rootValues` is a `private` shared resource
+* `computeRoots` is an `const` expensive function, which we want it to be run one time
+* `rootsAreValid` is a flag to see if expensive function has been executed
+* `m` is a `mutex` which prevents data race
+
+
 std::mutex is a move-only type, it can not be copied. Therefore, an object of class Polynomial is also a move-only type, not be copiable.
 
-# Use of std::atomic variables is suitable for manipulation of only a single variable or memory location.
+# `std::atomic` variable is suitable for manipulation of only a single variable or memory location.
 
 std::atomic is less expensive, less overkill compared to std::mutex. std::atomic is also a move-only type. !!! cppreference.com: "std::atomic is neither copyable nor movable. "
 
-Example: Counting how many time a function is called with std::atomic
+Example: Counting how many time a function is called with std::atomic. TODO: create main() to try this out.
 ```c++
 class Point
 {
