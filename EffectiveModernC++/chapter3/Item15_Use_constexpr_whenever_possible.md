@@ -60,7 +60,7 @@ Objects are constants and known during compilation are **privileged** because of
 
 Example using `constexpr` integer to start enummerators
 
-```
+```c++
 #include <iostream>
 
 int main()
@@ -81,13 +81,13 @@ green 6
 Finish
 ```
 
-Example using `constexpr` with alignment specifiers: todo
+Example using `constexpr` with alignment specifiers: not in the book. todo
 
 ## `const` vs. `constexpr` ?
 
 `constexpr` objects are `const`s but not the other way around. It means, `constexpr` objects are constant and known during complation but `const` can be not known during compilation
 
-The previous example but `arraySize` is a `const`
+The previous example but let us try to make `arraySize` a `const` but not a `constexpr`
 ```c++
 int main()
 {
@@ -96,7 +96,7 @@ int main()
     return 0;
 }
 ```
-This compiles OK-ish but two variables `sz` and `arraySize` have no initial values, take `0`s
+This compiles OK-ish but two variables `sz` and `arraySize` have no initial values, take `0`s as default values.
 
 Certainly, you can not use `arraySize` to specify size of an array
 ```c++
@@ -134,6 +134,10 @@ Finish
 ## Rules: 
 * `constexpr` functions can be used in contexts that demand compile-time constants. If the values of the arguments you pass to a `constexpr` function in such a context are known during compilation, the result will be computed during compilation. If any of the arguments’ values is not known during compilation, your code will be rejected. 
 
+```c++
+// I think, by "rejected" here the author does not mean code fails to compile.
+```
+
 * When a `constexpr` function is called with one or more values that are not known during compilation, it acts like a normal function, computing its result at runtime. This means you don’t need two functions to perform the same operation, one for compile-time constants and one for all other values. The `constexpr` function does it all.
 
 ```c++
@@ -165,7 +169,7 @@ int main()
 ```
 In above example, `pow11` and `pow14` return compile-time results when called with compile-time values.
 
-## `constexpr` ctor, setter and object
+## `constexpr` for ctors, getters and objects
 
 ```c++
 #include <array>
@@ -187,7 +191,8 @@ class Point
 
 constexpr Point midpoint(const Point& p1, const Point& p2) noexcept
 {
-    return { (p1.xValue() + p2.xValue())/2, (p1.yValue() + p2.yValue())/2 }; // interesting, no need to invoke ctor ?
+    return { (p1.xValue() + p2.xValue())/2, (p1.yValue() + p2.yValue())/2 }; 
+        // interesting, no need to invoke ctor ?
 }
 
 int main()
@@ -203,7 +208,7 @@ int main()
 }
 ```
 This shows a nice example from moving some computations done at runtime can be done at compile time.
-* At compile time: constructor -> object -> setter -> midpoint function -> midpoint object
+* At compile time: constructor -> object -> getter -> midpoint function -> midpoint object
 * At runtime: amazing_array
 
 In the above example, setters can not be `constexpr` functions in C++11 because it modifies object, and they have `void` return type (`void` is not a literal type in C++11) but this is lifted up in C++14.
@@ -228,7 +233,8 @@ class Point
 
 constexpr Point midpoint(const Point& p1, const Point& p2) noexcept
 {
-    return { (p1.xValue() + p2.xValue())/2, (p1.yValue() + p2.yValue())/2 }; // interesting, no need to invoke ctor ?
+    return { (p1.xValue() + p2.xValue())/2, (p1.yValue() + p2.yValue())/2 }; 
+        // interesting, no need to invoke ctor ?
 }
 
 constexpr Point reflection(const Point& p) noexcept
@@ -255,7 +261,7 @@ int main()
 }
 ```
 
-The strange thing is only `reflectedMid` is complained to not used, but not other points. Is it a compile-time object ?
+The strange thing is only `reflectedMid` is complained to not used, but not other `p1` and `p2` objects (in case you comment out all other computations). Is it a compile-time object ?
 ```c++
 Start
 
