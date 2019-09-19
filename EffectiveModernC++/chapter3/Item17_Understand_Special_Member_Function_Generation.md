@@ -79,3 +79,6 @@ The C++11 rules for these special member functions are:
 2. Destructor : Same as C++98, except that it is `noexcept` by default.
 3. Copy Operators: Runtime behavior is same, generation rules mentioned above, has dependency on move.
 4. Move operators: New to C++11, generated only if destructors, other copy and move operators are undeclared.
+
+Further Readings: https://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+
