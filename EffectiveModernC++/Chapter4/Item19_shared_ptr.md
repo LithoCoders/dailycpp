@@ -46,7 +46,7 @@ Finish
 * Copy assignment (as example above) also decrements *reference count* to object `int` of value 2 and increments *reference count* of object `int` of value 1.
 * When `shared_ptr` see *reference count* is `0` after decrement, it destroy resource.
 * Increment and decrement of a *reference count* must be atomic
-* For `std::shared_ptr`: move constructors are faster than copy constructors; move assignments are faster than copy assignments. Because move operators does not care about reference counts?
+* For `std::shared_ptr`: move constructors are faster than copy constructors; move assignments are faster than copy assignments. Because move operators seem not care about reference counts? So, "move when moveable, copy when otherwise"
 
 # `shared_ptr` vs. `unique_ptr`
 1. `shared_ptr`s are twice the size of a raw pointer because it stores
@@ -90,12 +90,12 @@ auto customSpecialDeleter = [](Widget* pw)    //custom deleter with special logg
 int main()
 {
     std::unique_ptr<Widget, decltype(customDeleter)> 
-                                  p(new Widget, customDeleter); // define type of custom deleter in template
+                                  p(new Widget, customDeleter); // define type of deleter in template
     
-    std::shared_ptr<Widget> sp1(new Widget, customDeleter);     // define type of custome deleter in ctor
+    std::shared_ptr<Widget> sp1(new Widget, customDeleter);     // define type of custom deleter in ctor
     std::shared_ptr<Widget> sp2(new Widget, customSpecialDeleter);
     
-    std::vector<std::shared_ptr<Widget>> vsp;                   // vector of shared pointers not care about deleters
+    std::vector<std::shared_ptr<Widget>> vsp;  // vector of shared pointers not care about deleters
     vsp.push_back(sp1);
     vsp.push_back(sp2);
     return 0;
