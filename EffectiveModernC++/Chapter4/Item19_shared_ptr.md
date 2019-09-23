@@ -112,6 +112,133 @@ void makeLogEntry(Widget*)0
 Finish
 ```
 As a result, we can have 
-* a vector of shared pointers with different deleters. 
+* A vector of shared pointers with different deleters. 
 * Shared pointers can be reassigned, reset its deleter. 
 * Passing a share pointer to a function, with different deleters.
+
+# Control Block
+There is a control block for each object managed by `std::shared_ptr`s. The control block contains:
+* a reference count
+* weak count (?)
+* Other data: custom deleter, custom allocator, etc.
+
+todo: ASCII_ize control block image.
+
+When a shared pointer is created to the *same* object, no control block is created. So, when a control block is created ?
+* `std::make_shared` (item 21) always creates a control block
+* `std::shared_ptr` is created from `std::unique_ptr` and `std::auto_ptr` (`auto_ptr` in legacy code)
+* `std::shared_ptr` is created from raw pointer
+
+Thing goes wrong when multiple `std::shared_ptr`s is created from a raw pointer.
+Assuming we have a raw pointer, thing is OK.
+```c++
+#include <iostream>
+#include <memory>
+
+struct Widget
+{
+    ~Widget()
+    {
+        std::cout << "Destroy.." ;
+    }
+};
+
+int main()
+{
+    auto pw = new Widget;
+    delete pw;   
+    
+    return 0;
+}
+Start
+
+Destroy..
+
+0
+
+Finish
+```
+But when we introduce a `shared_ptr` from this raw pointer. We double delete it.
+```c++
+#include <iostream>
+#include <memory>
+
+struct Widget
+{
+    ~Widget()
+    {
+        std::cout << "Destroy.." ;
+    }
+};
+
+int main()
+{
+    auto pw = new Widget;
+    std::shared_ptr<Widget> spw1 (pw);
+    delete pw;   
+    
+    return 0;
+}
+
+*** Error in `./prog.exe': double free or corruption (fasttop): 0x000000000227dc20 ***
+======= Backtrace: =========
+/lib/x86_64-linux-gnu/libc.so.6(+0x777e5)[0x7fd4adf377e5]
+.....
+```
+Object `Widget` is delted twice, thus causes undefined behavior. See more in Chapter4/experiment.mk
+
+When we comment out `delete pw`, it is OK.
+```c++
+int main()
+{
+    auto pw = new Widget;
+    std::shared_ptr<Widget> spw1 (pw);
+    //delete pw;       
+    return 0;
+}
+Start
+
+Destroy..
+
+0
+
+Finish
+```
+But when we have two `shared_ptr`s, thing does not go wrong as the book mentioned. According to the book, there are two *reference count* to the same object pointed by both `spw1` and `spw2`. Thus, causes undefined behavior.
+```c++
+int main()
+{
+    auto pw = new Widget;
+    
+    std::shared_ptr<Widget> spw1 (pw);
+    std::shared_ptr<Widget> spw2 (pw); //it seems, two different share pointers
+    
+    return 0;
+}
+Start
+
+Destroy..Destroy..
+
+0
+
+Finish
+```
+If undefined behavior happens as in the book, there are two advises:
+* first, don't use raw pointer at the first place. Use smart pointer
+* second, don't make `shared_ptr` from a raw pointer. Instead, use `std::make_shared` (item 21) or use `new` and ctor to make second `shared_ptr`. Don't pass variable `pw` as above.
+```c++
+int main()
+{
+    std::shared_ptr<Widget> spw1 (new Widget);
+    std::shared_ptr<Widget> spw2 (spw1);
+    
+    return 0;
+}
+Start
+
+Destroy..
+
+0
+
+Finish
+```
