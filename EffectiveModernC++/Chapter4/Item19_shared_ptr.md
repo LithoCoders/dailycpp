@@ -129,8 +129,11 @@ When a shared pointer is created to the *same* object, no control block is creat
 * `std::shared_ptr` is created from `std::unique_ptr` and `std::auto_ptr` (`auto_ptr` in legacy code)
 * `std::shared_ptr` is created from raw pointer
 
+# Creating `std::shared_ptr` from raw pointer
+## Using `new` and `ctor`
 Thing goes wrong when multiple `std::shared_ptr`s is created from a raw pointer.
-Assuming we have a raw pointer, thing is OK.
+
+Assuming we have a raw pointer as below.
 ```c++
 #include <iostream>
 #include <memory>
@@ -185,7 +188,7 @@ int main()
 /lib/x86_64-linux-gnu/libc.so.6(+0x777e5)[0x7fd4adf377e5]
 .....
 ```
-Object `Widget` is delted twice, thus causes undefined behavior. See more in Chapter4/experiment.mk
+Object `Widget` is deleted twice, thus causes undefined behavior. See more in Chapter4/experiment.mk
 
 When we comment out `delete pw`, it is OK.
 ```c++
@@ -241,4 +244,33 @@ Destroy..
 0
 
 Finish
+```
+## Using `std::enable_shared_from_this`
+```c++
+#include <iostream>
+#include <memory>
+
+struct Widget : public std::enable_shared_from_this<Widget> { // CRTP
+{
+    std::vector<std::shared_ptr<Widget>> prossessedWidgets;
+    
+    void process()
+    {
+        prossesedWidgets.emplace_back(shared_from_this());  //converter from this ptr to shared_ptr
+            
+    }
+    
+    ~Widget()
+    {
+        std::cout << "Destroy.." ;
+    } 
+    
+};
+
+int main()
+{  
+   Widget w;
+
+   return 0;
+}
 ```
