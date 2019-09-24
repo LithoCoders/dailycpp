@@ -274,3 +274,8 @@ int main()
    return 0;
 }
 ```
+
+# Other notes
+- `std::unique_ptr` can be converted to `shared_ptr` but not the other way around. This means, *control block* is created as mentioned in rules of control block
+- no `std::shared_ptr` of an array `std:;shared_ptr<T[]>. Dont try to build it.
+
