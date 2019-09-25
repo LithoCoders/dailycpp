@@ -258,7 +258,7 @@ int main()
     //delete pw;   
     
     return 0;
-} // leaking in pw
+} 
 Start
 
 Destroy..ptr
@@ -309,20 +309,23 @@ There are two advises:
 ```c++
 int main()
 {
-    std::shared_ptr<Widget> spw1 (new Widget);
-    std::shared_ptr<Widget> spw2 (spw1);
+    std::shared_ptr<Widget> spw1 (new Widget("ptr"));  //using new
+    std::shared_ptr<Widget> spw2 (spw1);               //using copy ctor
     
-    return 0;
+    std::cout << "sp1's name: " << spw1->name << ". RC= " << spw1.use_count() << std::endl;
+    std::cout << "sp2's name: " << spw2->name << ". RC= " << spw2.use_count() << std::endl;
 }
 Start
 
-Destroy..
+sp1's name: ptr. RC= 2
+sp2's name: ptr. RC= 2
+Destroy..ptr
 
 0
 
 Finish
 ```
-## Using `std::enable_shared_from_this`
+## Using `std::enable_shared_from_this` - todo
 ```c++
 #include <iostream>
 #include <memory>
