@@ -40,13 +40,62 @@ use_count = 2
 
 Finish
 ```
+We rework on the above example to show how copy assignment `sp2 = sp1` makes `sp2` destroys its object and start pointing to same object with `sp1`. We also shorten the code with `auto`.
+
+```c++
+#include <iostream>
+#include <memory>
+
+struct Widget
+{
+    std::string name = "";
+    Widget(std::string n) : name{n} {}
+    
+    ~Widget()
+    {
+        std::cout << "Destroy.." << name << std::endl;
+    }
+};
+
+int main()
+{
+    auto sp1 = std::make_shared<Widget>("sp1");
+    auto sp2 = std::make_shared<Widget>("sp2");
+    
+    std::cout << "use_count = " << sp1.use_count() << std::endl;
+    sp2 = sp1; //copy assignment causes sp2 free its object and point to same object with sp1
+    
+    sp1->name = "common shared pointer";
+    std::cout << "sp1->name " << sp1->name << ", sp2->name= " << sp2->name << std::endl;   
+    
+    //check number of pointers point to the same object
+    if (sp1.use_count() == sp2.use_count())
+        std::cout << "use_count = " << sp2.use_count() << std::endl;
+    else
+        std::cout << "something wrong" << std::endl;  
+    
+    return 0;
+}//destroy only one time by sp1 because of sp1 and sp2 on stack
+
+Start
+
+use_count = 1
+Destroy..sp2
+sp1->name common shared pointer, sp2->name= common shared pointer
+use_count = 2
+Destroy..common shared pointer
+
+0
+
+Finish
+```
 **Reference count**
 * Constructor increments *reference count*
 * Destructor decrements *reference count*
-* Copy assignment (as example above) also decrements *reference count* to object `int` of value 2 and increments *reference count* of object `int` of value 1.
-* When `shared_ptr` see *reference count* is `0` after decrement, it destroy resource.
+* Copy assignment (as first example above) also decrements *reference count* to object `int` of value 2 and increments *reference count* of object `int` of value 1.
+* When `shared_ptr` sees *reference count* is `0` after decrement, it destroys resource.
 * Increment and decrement of a *reference count* must be atomic
-* For `std::shared_ptr`: move constructors are faster than copy constructors; move assignments are faster than copy assignments. Because move operators seem not care about reference counts? So, "move when moveable, copy when otherwise"
+* For `std::shared_ptr`: move constructors are faster than copy constructors; move assignments are faster than copy assignments. Because move operators seem not care about reference counts. So, "move when moveable, copy when otherwise".
 
 # `shared_ptr` vs. `unique_ptr`
 1. `shared_ptr`s are twice the size of a raw pointer because it stores
@@ -54,7 +103,7 @@ Finish
 * a raw pointer to reference count (but actually later we see it is a block of memory, called *control block*)
 
 2. `shared_ptr`s are more flexible with custom deleter, compared to `unique_ptr`s.
-This is because share pointers need defining custom deleter as input of cosntructor while unique pointers need to define custom deleter in template parameter.
+This is because share pointers need defining custom deleter as input of constructor while unique pointers need to define custom deleter in template parameter.
 
 ```c++
 #include <memory>
@@ -96,7 +145,7 @@ int main()
     std::shared_ptr<Widget> sp2(new Widget, customSpecialDeleter);
     
     std::vector<std::shared_ptr<Widget>> vsp;  // vector of shared pointers not care about deleters
-    vsp.push_back(sp1);
+    vsp.push_back(sp1);                        // of each element       
     vsp.push_back(sp2);
     return 0;
 }
@@ -129,6 +178,8 @@ When a shared pointer is created to the *same* object, no control block is creat
 * `std::shared_ptr` is created from `std::unique_ptr` and `std::auto_ptr` (`auto_ptr` in legacy code)
 * `std::shared_ptr` is created from raw pointer
 
+It makes sense since all three items mean that it is the first time a shared pointer is created.
+
 # Creating `std::shared_ptr` from raw pointer
 ## Using `new` and `ctor`
 Thing goes wrong when multiple `std::shared_ptr`s is created from a raw pointer.
@@ -140,93 +191,119 @@ Assuming we have a raw pointer as below.
 
 struct Widget
 {
+    std::string name = "";
+    Widget(std::string n) : name{n} {}
+    
     ~Widget()
     {
-        std::cout << "Destroy.." ;
+        std::cout << "Destroy.." << name << std::endl;
     }
 };
 
 int main()
 {
-    auto pw = new Widget;
+    auto pw = new Widget("raw ptr");
     delete pw;   
     
     return 0;
 }
 Start
 
-Destroy..
+Destroy..raw ptr
 
 0
 
 Finish
 ```
-But when we introduce a `shared_ptr` from this raw pointer. We double delete it.
+But when we introduce a `shared_ptr` from this raw pointer. We double deleting it.
 ```c++
 #include <iostream>
 #include <memory>
 
 struct Widget
 {
+    std::string name = "";
+    Widget(std::string n) : name{n} {}
+    
     ~Widget()
     {
-        std::cout << "Destroy.." ;
+        std::cout << "Destroy.." << name << std::endl;
     }
 };
 
 int main()
 {
-    auto pw = new Widget;
+    auto pw = new Widget("ptr");
     std::shared_ptr<Widget> spw1 (pw);
     delete pw;   
     
     return 0;
 }
+Start
 
-*** Error in `./prog.exe': double free or corruption (fasttop): 0x000000000227dc20 ***
-======= Backtrace: =========
-/lib/x86_64-linux-gnu/libc.so.6(+0x777e5)[0x7fd4adf377e5]
-.....
+Destroy..ptr
+
+Segmentation fault
+
+Finish
 ```
-Object `Widget` is deleted twice, thus causes undefined behavior. See more in Chapter4/experiment.mk
+Object `Widget` is deleted twice, thus causes undefined behavior. 
 
 When we comment out `delete pw`, it is OK.
 ```c++
 int main()
 {
-    auto pw = new Widget;
+    auto pw = new Widget("ptr");
     std::shared_ptr<Widget> spw1 (pw);
-    //delete pw;       
+    //delete pw;   
+    
     return 0;
-}
+} // leaking in pw
 Start
 
-Destroy..
+Destroy..ptr
 
 0
 
 Finish
 ```
-But when we have two `shared_ptr`s, thing does not go wrong as the book mentioned. According to the book, there are two *reference count* to the same object pointed by both `spw1` and `spw2`. Thus, causes undefined behavior.
+But when we have two `shared_ptr`s created from same raw pointer, thing does go wrong. There are two *reference count* to the same object pointed by both `spw1` and `spw2`. Thus, causes undefined behavior.
 ```c++
+#include <iostream>
+#include <memory>
+
+struct Widget
+{
+    std::string name = "";
+    Widget(std::string n) : name{n} {}
+    
+    ~Widget()
+    {
+        std::cout << "Destroy.." << name << std::endl;
+    }
+};
+
 int main()
 {
-    auto pw = new Widget;
-    
+    auto pw = new Widget("ptr");
     std::shared_ptr<Widget> spw1 (pw);
-    std::shared_ptr<Widget> spw2 (pw); //it seems, two different share pointers
+    std::shared_ptr<Widget> spw2 (pw);
+    std::cout << "sp1's name: " << spw1->name << ". RC= " << spw1.use_count() << std::endl;
+    std::cout << "sp2's name: " << spw2->name << ". RC= " << spw2.use_count() << std::endl;
     
     return 0;
 }
 Start
 
-Destroy..Destroy..
+sp1's name: ptr. RC= 1
+sp2's name: ptr. RC= 1
+Destroy..ptr
 
-0
+Segmentation fault
 
 Finish
 ```
-If undefined behavior happens as in the book, there are two advises:
+There are two advises:
 * first, don't use raw pointer at the first place. Use smart pointer
 * second, don't make `shared_ptr` from a raw pointer. Instead, use `std::make_shared` (item 21) or use `new` and ctor to make second `shared_ptr`. Don't pass variable `pw` as above.
 ```c++
@@ -277,5 +354,5 @@ int main()
 
 # Other notes
 - `std::unique_ptr` can be converted to `shared_ptr` but not the other way around. This means, *control block* is created as mentioned in rules of control block
-- no `std::shared_ptr` of an array `std:;shared_ptr<T[]>. Dont try to build it.
+- no `std::shared_ptr` of an array `std:;shared_ptr<T[]>.` Dont try to build it.
 
