@@ -32,7 +32,7 @@ in short it prevents code duplication.
 The second reason is to do with exception safety. Suppose you have a function `computePriority()` that is called by the `new` version of 
 `processWidget`.
 ```c++
-void processWidget(std::shared_ptr<Widget> spw, int priority);
+processWidget(std::shared_ptr<Widget> spw, int priority);
 processWidget(std::shared_ptr<Widget>(new Widget), // potential
 computePriority()); // resource
 // leak!
