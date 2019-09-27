@@ -51,5 +51,31 @@ The advantage of using the snippet above is that `make_shared` or `computePriori
 thrown by `computePriority`, we can be sure that the memory is deallocated or not allocated in the first place. The same is the case
 with `std::make_unique`.
 
+Another advantage of using `std::make_shared` is that it comes with improved efficiency. The use of `std::shared_ptr<Widget> spw(new Widget);` does two memory allocations, firstly `new` is one memory allocation, apart from this you have to allocate the 
+memory for the control block that comes along with the share pointer. If instead, you use `auto spw = std::make_shared<Widget>();`
+then there is just one memory allocation because `make_shared` allocates one big single chunk to hold both the object and the control
+block. The same is the case with `std::allocate_shared`. 
+
+The author also argues that despite the advantages, there are circumstances where make should not be used and one should not exclusively
+depend on make.
+
+For example, none of the make functions permit the specification of custom deleters whereas both `std::unique_ptr` and `std::shared_ptr`. You can declared a `shared_ptr` with a custom deleter as shown below:
+```c++
+std::shared_ptr<Widget> spw(new Widget, widgetDeleter);
+```
+However, such a feature is not available with make.
+
+The second disadvantage is that you cannot use `std::initializer_list` parameters using braced initializers. Fot that, you have to use 
+`new` or a work around like the one shown below:
+
+```c++
+// create std::initializer_list
+auto initList = { 10, 20 };
+// create std::vector using std::initializer_list ctor
+auto spv = std::make_shared<std::vector<int>>(initList);
+```
+
+
+
 
 
