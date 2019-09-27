@@ -74,6 +74,41 @@ auto initList = { 10, 20 };
 // create std::vector using std::initializer_list ctor
 auto spv = std::make_shared<std::vector<int>>(initList);
 ```
+There are two more disadvantages associated with using `std::make_shared`. One scenario is where some classes define their own 
+versions of `new` and `delete`. In these cases, the memory allocation and deallocation is exactly the size of the object. This 
+kind of memory allocation is not a good fit for `std::shared` custom allocators and deleters as these allocate memory which is size of
+the object plus the control block. Using make functions for such objects is not a good idea. This is because the speed advantage of
+using `std::make_shared` is that it typically places the object and the control block in the same block of memory. When the 
+reference count of the object goes to zero, the destructor of the object is called, but the memory it occupies will not be released
+until the control block is released because both are in the same chunk of memory that was allocated.
+The control block also contains a reference count which indicates how many `std::weak_ptr`s refer to that control block. AS long 
+as you have `std::weak_ptr`s refer to a control block, the memory needs to be alive.
+
+In order to avoid exception unsafe behavior, use the snippet below(not optimal):
+```c++
+std::shared_ptr<Widget> spw(new Widget, cusDel);
+processWidget(spw, computePriority()); // shared ptr passed as lvalue
+```
+The reason why this is not optimal is that in the snippet below:
+```c++
+processWidget(
+std::shared_ptr<Widget>(new Widget, cusDel), // passed as rvalue
+computePriority()
+);
+```
+you are passing an rvalue, but in the previous case, the shared pointer is passed as an lvalue. Using an lvalue comes with its
+performance overheads(i.e the shared pointer has to be copied and its reference count has to be incremented).
+So, in-order to achieve the same level of performance as an exception unsafe code, we needs to use an rvalue as it is more optimal.
+This can be acheived as shown below:
+```c++
+processWidget(std::move(spw), // both efficient and
+computePriority()); // exception safe
+```
+
+In summary, use make whenever possible to improve exception safety, speed and avoid code duplication. Make should be avoided in places
+where you need custom deallocation of memory. It should also be avoided in instances where you need to pass an initializer list. Also keep in mind that make can cause problems where huge objects with custom memory allocation can outlive the life of the shared pointer
+pointing to it.
+
 
 
 
