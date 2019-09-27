@@ -31,7 +31,7 @@ in short it prevents code duplication.
 
 The second reason is to do with exception safety. Suppose you have a function `computePriority()` that is called by the `new` version of 
 `processWidget`.
-```
+```c++
 void processWidget(std::shared_ptr<Widget> spw, int priority);
 processWidget(std::shared_ptr<Widget>(new Widget), // potential
 computePriority()); // resource
@@ -108,9 +108,3 @@ computePriority()); // exception safe
 In summary, use make whenever possible to improve exception safety, speed and avoid code duplication. Make should be avoided in places
 where you need custom deallocation of memory. It should also be avoided in instances where you need to pass an initializer list. Also keep in mind that make can cause problems where huge objects with custom memory allocation can outlive the life of the shared pointer
 pointing to it.
-
-
-
-
-
-
