@@ -23,23 +23,13 @@ As the name of this item mentions, when you implement pimpl idiom, all special m
  #include "Widget.h"
  //using Widget
  ```
-As seen, *Gaget.h* is indirectly included in client code. A chain of header including is *Gaget.h* -> *Widget.h* -> client code. As *Gaget.h* is frequently changed, compiler takes more time to build whole program.
+As seen, *Gaget.h* is indirectly included in client code. A chain of header including is *Gaget.h* -> *Widget.h* -> client code. As *Gaget.h* is frequently changed, compiler takes more time to build the whole program.
 Pimpl idiom reduces the compilation time.
 
 ## How to implement pimpl ?
 Pimpl idiom makes use of *incomplete type* concept, whereas a type has been declared but not defined. `size of` and `delete` to an incomplet type is NOK.
 However, declaring a pointer to an *incomplete type* is OK.
 ```c++
-//main.cpp
-#include "widget.hpp"
-
-int main()
-{
-   Widget w1;
-
-   return 0;
-}
-
 //widget.hpp
 #ifndef WIDGET_H__
 #define WIDGET_H__
@@ -81,6 +71,16 @@ Widget::~Widget()
     cout << __PRETTY_FUNCTION__ << endl;
 }
 
+//main.cpp
+#include "widget.hpp"
+
+int main()
+{
+   Widget w1;
+
+   return 0;
+}
+
 //Makefile
 all: main widgetlib
 
@@ -94,7 +94,7 @@ clean:
         rm -f widget.o main.out
 
 ```
-As we see, `widget.hpp` no longer includes Gaget headers (i.e., `vector` and `string` - just for example purpose. It can can be any user define type)
+As we see, `widget.hpp` no longer includes Gaget headers (i.e., `vector` and `string` - just for example purpose. It can can be any user defined type)
 Client code `main.cpp` includes `widget.hpp`. 
 If you remove destructor, compiler will try to generate one and unique pointer complains does not know `sizeof` incomplete type `Impl` struct to free this resource.
 
@@ -212,10 +212,27 @@ clean:
         rm -f widget.o main.out
 ```
 As we learn from Item  17, when we explicitly define a destructor, move operators are not generated. Thus, we need to make it explicit to compiler to generate two default move operators.
-When we define move operators, compiler will not generate copy operators. Thus, we need to define them. Copy operators are deep-copy.
+When we define move operators, compiler will not generate copy operators. Thus, we need to define them. Copy operators are deep-copy, meaning not copying the memory address of unique pointer but the data in which pointer point to. 
 
 Note that all these special functions declared in header but only defined in cpp file.
 
+Running the above example, output shows
+```c++
+0x108cc38 w1
+0x108cc38 w1
+0x108cc38 w1
+0x108d088 w1
+0x108d0c8 w1
+Widget::~Widget()
+Widget::~Widget()
+Widget::~Widget()
+Widget::~Widget()
+Widget::~Widget()
+```
+We see that `w1`, `w2`, `w3` has same address of `Widget::Impl::id` because of move constructor and move assignment. 
+`w4`, `w5` have different memory address because of copy constructor and copy assignment.
+
+It seems, all five object exist till end of program because five destructors are called.
 
 
 
