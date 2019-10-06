@@ -1,9 +1,9 @@
 # Use `std::weak_ptr` for `std::shared_ptr`-like pointers that can dangle
 
-`std::weak_ptr`s are like `std::shared_ptr`s but not participate in ownership of the pointed-to resource, but they are able to track if resource is destroyed, so-called, *dangling pointers*
+`std::weak_ptr`s are like `std::shared_ptr`s but not participate in ownership of the pointed-to resource, but they are able to track if resource is destroyed, i.e., *dangling pointers*
 This also means, `std::weak_ptr`s do not affect to object's reference count.
 
-Here are some characteristics:
+## Some characteristics:
 * `std::weak_ptr`s can be created from `std::shared_ptr`s
 * it can't be dereferenced
 * it can't be tested for nullness
@@ -41,7 +41,7 @@ error: no match for 'operator*' (operand type is 'std::weak_ptr<int>')
         std::cout  << *wpi << std::endl;
                       ^~~~
 ```
-We can check for nullnes of `std::shared_ptr` but not `std::weak_ptr`
+We can check for nullness of `std::shared_ptr` but not `std::weak_ptr`
 ```c++
 std::cout  << (spi==nullptr) << std::endl;
 
@@ -70,21 +70,85 @@ int main()
     std::shared_ptr<int> spi = std::make_shared<int> (1);    
     std::weak_ptr<int> wpi(spi);            
     
-    std::cout  << "Does obj exist ? "  << wpi.expired()  << std::endl;
-    spi = nullptr;
-    std::cout  << "Does obj exist ? "  << wpi.expired()  << std::endl;    
+    std::cout  << std::boolalpha <<  "Is obj expired ? "  << wpi.expired()  << std::endl;
+    spi = nullptr;     //wpw now dangles
+    std::cout  << "Is obj expired ? "  << wpi.expired()  << std::endl;    
     
     return 0;
 }
 Start
 
-Does obj exist ? 0
-Does obj exist ? 1
+Is obj expired ? false
+Is obj expired ? true
 
 0
 
 Finish
 ```
+## How to access to object pointed by a `std::weak_ptr` ?
+Often the case we would like to access to object, pointed by a `std::weak_ptr`, so we need to:
+* check if `std::weak_ptr` is expired ? Is object destroyed?
+* dereference pointere to access to object.
+But `std::weak_ptr` does not support reference. 
+
+You need to create a `std::shared_ptr` from `std::weak_ptr` so that you can manipulate object. There are two ways to do this: using `lock()` or using `std::shared_ptr` constructor
+
+```c++
+#include <iostream>
+#include <memory>
+
+int main()
+{ 
+    std::shared_ptr<int> spi1 = std::make_shared<int> (1);    
+    std::weak_ptr<int> wpi(spi1);            
+    std::cout  << std::boolalpha <<  "Is obj expired ? "  << wpi.expired()  << std::endl;
+    
+    //using lock()
+    std::shared_ptr<int> spi2 = wpi.lock();
+    std::cout << "RC: " << spi2.use_count() << std::endl;   
+    std::cout << "obj = " << *spi2 << std::endl;   
+    
+    //using shared_ptr ctor
+    std::shared_ptr<int> spi3 (wpi);
+    std::cout << "RC: " << spi3.use_count() << std::endl;   
+    std::cout << "obj = " << *spi3 << std::endl;   
+    
+    spi3=nullptr;
+    spi2=nullptr;
+    spi1=nullptr;
+    std::cout << wpi.expired() << std::endl;   
+    std::shared_ptr<int> spi4 (wpi);
+        
+    return 0;
+}
+Start
+
+Is obj expired ? false
+RC: 2
+obj = 1
+RC: 3
+obj = 1
+true
+
+terminate called after throwing an instance of 'std::bad_weak_ptr'
+  what():  bad_weak_ptr
+
+Aborted
+
+Finish
+```
+
+In the above example, when `wpi` is expired (all shared pointers are null), then run-time exception is thrown, saying `std::bad_weak_ptr`
+
+We observe that `std::shared_ptr` and `std::weak_ptr` can be created from constructor, taking the other one as argument.
+```c++
+std::weak_ptr<int> wpi(spi);        
+
+std::shared_ptr<int> spi (wpi);
+```
+
+
+
 
 
 
