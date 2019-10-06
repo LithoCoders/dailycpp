@@ -1,6 +1,6 @@
 # Item 21 - Prefer `std::make_unique` and `std::make_shared` to direct use of `new`
 
-Note: Contains snippets from Effective Mordern C++ by Scott Meyers
+Note: contributed by P. Contains snippets from Effective Mordern C++ by Scott Meyers
 
 `std::make_shared` is a part of C++11, but `std::make_unique` is part of C++14 and not C++11.
 
