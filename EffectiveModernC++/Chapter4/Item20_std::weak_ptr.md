@@ -140,16 +140,16 @@ Finish
 
 In the above example, when `wpi` is expired (all shared pointers are null), then run-time exception is thrown, saying `std::bad_weak_ptr`
 
-We observe that `std::shared_ptr` and `std::weak_ptr` can be created from constructor, taking the other one as argument.
+We observe that `std::shared_ptr` and `std::weak_ptr` can be created from each other's constructor, taking the other one as argument.
+This strengthens the idea that weak pointers are shared pointers which can dangle.
 ```c++
 std::weak_ptr<int> wpi(spi);        
 
 std::shared_ptr<int> spi (wpi);
 ```
 
-
-
-
-
-
-
+## How `std::weak_ptr` can be useful ?
+In the book, the author mentioned three use cases:
+* factory function
+* observer pattern
+* prevention of `std::shared_ptr` cycle dependency
