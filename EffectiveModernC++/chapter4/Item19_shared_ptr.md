@@ -325,7 +325,7 @@ Destroy..ptr
 
 Finish
 ```
-## Using `std::enable_shared_from_this` - todo
+## Using `std::enable_shared_from_this` 
 ```c++
 #include <iostream>
 #include <memory>
@@ -355,7 +355,46 @@ int main()
 }
 ```
 
+One more example where you can create a shared pointer from a raw pointer, and free resource when applicable.
+```c++
+#include <iostream>
+#include <memory>
+#include <string>
+
+struct Foo : public std::enable_shared_from_this<Foo> { //CRTP
+    std::string name= "";
+    Foo() { std::cout << "Foo::Foo\n"; }
+    ~Foo() { std::cout << "Foo::~Foo\n"; }
+    std::shared_ptr<Foo> getFoo() { return shared_from_this(); }
+};
+ 
+int main() {
+    Foo *f = new Foo;             //raw pointer
+    std::shared_ptr<Foo> pf1;     //pf1 not pointing to any obj
+    std::cout << "RC = "<< pf1.use_count() << std::endl;
+    {//local scope for pf2
+        std::shared_ptr<Foo> pf2(f);  //pf2 pointing to same obj by raw pointer
+        pf1 = pf2->getFoo();  // shares ownership of object with pf2
+        std::cout << "RC = "<< pf1.use_count() << std::endl;
+    }
+    std::cout << "RC = "<< pf1.use_count() << std::endl;
+    std::cout << "pf2 is gone\n";   //pf2 is gone because out of scope
+}//pf1 is gone, thus free obj
+Start
+
+Foo::Foo
+RC = 0
+RC = 2
+RC = 1
+pf2 is gone
+Foo::~Foo
+
+0
+
+Finish
+```
+
 # Other notes
 - `std::unique_ptr` can be converted to `shared_ptr` but not the other way around. This means, *control block* is created as mentioned in rules of control block
-- no `std::shared_ptr` of an array `std:;shared_ptr<T[]>.` Dont try to build it.
+- no `std::shared_ptr` of an array `std::shared_ptr<T[]>.` Dont try to build it.
 
