@@ -13,9 +13,9 @@ void f(T&& param); //not an rvalue reference
 
 ```
 
-`T&&` can eiter point only to rvalues or it can point to either rvalue or lvalue references. `T&&` can also indicate as if they were 
+`T&&` can either point only to rvalues or it can point to either rvalue or lvalue references. `T&&` can also indicate as if they were 
 lvalue references(`T&`). They can bind to const, non const, volatile or non-volatile objects. The author calls such references as universal
-references.
+references or forwarding references (because we almost aplways apply *std::forward* to it - item 25).
 
 For instance, the follwing indicate universal references
 
@@ -36,7 +36,7 @@ Widget&& var1 = Widget(); //no type deduction, var1 is an rvalue reference
 
 ```
 
-The initializer determines the whether the universal reference is an rvalue or an lvalue.
+The initializer determines whether the universal reference is an rvalue or an lvalue.
 
 ```c++
 template<typename T>
@@ -49,8 +49,7 @@ f(std::move(f)); // rvalue, params type is Widget&&
 
 ```
 
-For a reference to be universal, type deduction must be present but that alone does not indicate that the reference is universal. For
-instance, in the following snippet, param is an rvalue reference
+For a reference to be universal, type deduction must be present but that alone does not indicate that the reference is universal. For instance, in the following snippet, param is an rvalue reference
 
 ```c++
 template<typename T>
