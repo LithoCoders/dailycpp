@@ -10,6 +10,8 @@ Note: a parameter is always an lvalue.
 ```c++
 void f(Widget&& w); //w is an lvalue.
 ```
+
+# Move semantics with `std::move`
 std::move vs. std::forward
 * both do 'casting' to rvalue.
 * `std::move` casts to rvalue without any condition.
@@ -90,4 +92,115 @@ Two lessons:
 2. `std::move` does not guarantee that rvalue it returns is eligible to be moved.
 `std::move` guarantees to return you an rvalue.
 
+# Perfect forwarding with `std::forward`
+While `std::move` unconditionally casts its argument to an rvalue, `std::forward` **conditionally** casts its argument to an rvalue. 
 
+So, when ? It is how `std::forward` is typically used, i.e., in function template taking universal reference parameters. 
+
+```c++
+#include <utility>    
+#include <iostream>    
+
+class Widget{
+        
+};
+
+void process(const Widget& lvalWidget)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+}
+void process(Widget&& rvalWidget)
+{
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+}
+    
+template<typename T>
+void logAndProcess(T&& param)
+{
+    //do some logging 
+    process(std::forward<T>(param));
+}
+    
+int main () {
+  Widget w;
+  logAndProcess(w);                  //lvalue
+  logAndProcess(std::move(w));       //rvalue
+   
+  return 0;
+}
+Start
+
+void process(const Widget&)
+void process(Widget&&)
+
+0
+
+Finish
+```
+
+`std::forward` casts to an rvalue if its argument was initialized with an rvalue.
+
+Put the above code on C++ Insights we see both two functions are generated, one taking an rvalue, other taking an lvalue. If you remove one of the two `logAndProcess(w);` or `logAndProcess(std::move(w));`, only one function is generated from the template.
+
+```c++
+#include <utility>    
+#include <iostream>    
+
+class Widget
+{
+  public: 
+  // inline constexpr Widget() noexcept = default;
+  // inline constexpr Widget(const Widget &) = default;
+  // inline constexpr Widget(Widget &&) = default;
+};
+
+
+
+void process(const Widget & lvalWidget)
+{
+  std::operator<<(std::cout, "void process(const Widget &)").operator<<(std::endl);
+}
+
+void process(Widget && rvalWidget)
+{
+  std::operator<<(std::cout, "void process(Widget &&)").operator<<(std::endl);
+}
+
+    
+template<typename T>
+void logAndProcess(T&& param)
+{
+    //do some logging 
+    process(std::forward<T>(param));
+}
+
+/* First instantiated from: insights.cpp:26 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void logAndProcess<Widget &>(Widget & param)
+{
+  process(std::forward<Widget &>(param));
+}
+#endif
+
+
+/* First instantiated from: insights.cpp:27 */
+#ifdef INSIGHTS_USE_TEMPLATE
+template<>
+void logAndProcess<Widget>(Widget && param)
+{
+  process(std::forward<Widget>(param));
+}
+#endif
+
+    
+int main()
+{
+  Widget w = Widget();
+  logAndProcess(w);
+  logAndProcess(std::move(w));
+  return 0;
+}
+```
+# Do you need both of them ?
+The author mentioned that it is necessary to have both `std::move` and `std::forward` because these two do different actions. One prepares for a move, the other one passes/forwards an object to another function in a way that retains its original *lvalueness* or *rvalueness*
