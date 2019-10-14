@@ -1,5 +1,7 @@
 **Rules**: Use `std::move` on rvalue references and `std::forward` on universal references.
 
+"Coding, many quotes from book Effective Modern C++"
+
 # Try to not follow the rules
 Ravlue references bind to object to be moved whereas universal references might bind to object that eligible to be moved.
 
@@ -99,7 +101,8 @@ Thus, universal reference is the only way to go. As a result, you need `std::for
 
 There are more rules...
 
-## Apply `std::move` and `std::forward` at the end of usage since you don't want to have unspecified value when you are not done with rvalue references and universal references
+## Apply `std::move` and `std::forward` at the end of usage
+Because you don't want to have unspecified value when you are not done with rvalue references and universal references
 
 template<typename T>                       // text is 
 void setSignText(T&& text)                 // univ. reference 
@@ -111,7 +114,8 @@ void setSignText(T&& text)                 // univ. reference
 }                                      
       
 
-## With function returning a value, object bound to rvalue reference or universal reference, apply `std::move` or `std::forward` correspondingly.
+## With function returning a value
+Object bound to rvalue reference or universal reference, apply `std::move` or `std::forward` correspondingly.
 
 Example 1: Matrix adding. Efficient code shows moving instead of copying
 ```c++
@@ -129,11 +133,57 @@ Matrix operator+(Matrix&& lhs, const Matrix&& rhs) //return by-value
 }
 ```
 Example 2: Fraction. 
+```c++
+template<typename T> Fraction reduceAndCopy(T&& frac) // return a Fraction object
+{
+    fraction.reduce;
+    return std::forward<T>(frac);   // if frac is an lvalue -> copy
+                                    // if frac is an rvalue -> move
+}
 
+```
 
 ## RVO - return value optimization.
 No applying `std::move` and `std::forward` for local variables.
 
+RVO: constructing `w` in the memory alloted for the function's return value.
+Two condition to have RVO happens:
+* type of local object is the same as that returned by the function
+* local object is returned
 
+```c++
+Widget makeWidget()
+{
+    Widget w;
+    //do something
+    return w;
+}
+```
+Don't introduce `std::move` in this code. Because it is no longer qualified for RVO
+```c++
+Widget makeWidget()
+{
+    Widget w;
+    //do something
+    return std::move(w); //don't do this
+}
+```
 
-
+The same with by-value function parameters
+```c++
+Widget makeWidget(Widget w)
+{
+    Widget w;
+    //do something
+    return w;
+}
+```
+Don't introduce `std::move` in this code.
+```c++
+Widget makeWidget(Widget w)
+{
+    Widget w;
+    //do something
+    return std::move(w); //don't
+}
+```
