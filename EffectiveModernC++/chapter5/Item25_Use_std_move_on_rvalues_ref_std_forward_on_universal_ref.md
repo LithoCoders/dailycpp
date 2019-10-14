@@ -103,7 +103,7 @@ There are more rules...
 
 ## Apply `std::move` and `std::forward` at the end of usage
 Because you don't want to have unspecified value when you are not done with rvalue references and universal references
-
+```c++
 template<typename T>                       // text is 
 void setSignText(T&& text)                 // univ. reference 
 {  
@@ -112,7 +112,7 @@ void setSignText(T&& text)                 // univ. reference
 
     signHistory.add(now, std::forward<T>(text));  // conditionally cast text to rvalue 
 }                                      
-      
+```  
 
 ## With function returning a value
 Object bound to rvalue reference or universal reference, apply `std::move` or `std::forward` correspondingly.
