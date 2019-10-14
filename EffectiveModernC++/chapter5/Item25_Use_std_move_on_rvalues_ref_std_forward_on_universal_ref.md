@@ -173,7 +173,6 @@ The same with by-value function parameters
 ```c++
 Widget makeWidget(Widget w)
 {
-    Widget w;
     //do something
     return w;
 }
@@ -182,7 +181,6 @@ Don't introduce `std::move` in this code.
 ```c++
 Widget makeWidget(Widget w)
 {
-    Widget w;
     //do something
     return std::move(w); //don't
 }
