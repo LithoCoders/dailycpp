@@ -44,4 +44,35 @@ int main () {
     std::cout << std::endl;
   return 0;
 }
+class Person
+{
+	public:
+		template<typename T>
+		explicit person(T && name):_name(std::forward<T>(name)) {
+			std::cout<<"The template"<<std::endl;
+		}
+		
+		explicit person(int ind):_name("FOO") {
+			std::cout<<"The specific int"<<std::endl;
+		}
+		
+	private:
+		std::string _name;
+	
+};
+class SpecialPerson : public Person 
+{
+};
+
+int main () 
+{
+	Person p("ISLAM");
+	//const Person P_c("ISLAM2");
+	int i = 1000
+	short s = 12;
+	Person p2(i);
+	Person p3(s);
+	
+	Person my_new(p);
+}
 ```
