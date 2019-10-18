@@ -44,7 +44,7 @@ int main () {
     std::cout << std::endl;
   return 0;
 }
-```
+
 //In the constructor
 class Person
 {
@@ -77,3 +77,4 @@ int main ()
 	
 	Person my_new(p);
 }
+```
