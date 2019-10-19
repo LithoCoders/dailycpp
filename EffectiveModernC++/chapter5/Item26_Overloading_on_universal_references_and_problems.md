@@ -164,6 +164,8 @@ As compliation log shows, there is no string ctor taking a `short int&`, `long i
 "Functions taking universal references are the greediest functions in C++. They instantiate to create exact matches for almost any type of argument (except few types in Item 30). The universal overload vacuums up far more argument types than expected."
 
 ## Perfect-forwarding constructors
+*Credit to ISLA*
+
 ```c++
 class Person
 {
@@ -187,8 +189,8 @@ class SpecialPerson : public Person
 
 int main () 
 {
-	Person p("ISLAM");
-	//const Person P_c("ISLAM2");
+	Person p("ISLA");
+	//const Person P_c("ISLA");
 	int i = 1000
 	short s = 12;
 	Person p2(i);
