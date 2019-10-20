@@ -157,7 +157,7 @@ required from 'void logAndAddToSet(T&&) [with T = long int&]'
 required from 'void logAndAddToSet(T&&) [with T = long unsigned int&]'
     
 ```
-The author gave a clear explanation: "There are two overloads. The one taking a universal reference can deduce `T` to be `short&`, thus yielding an exact match (item 28 explains why `short&` not `short`). The overload with an `int` parameter can match the `short` argument only with a promotion. Per the normal overload resolution rules, an exact match beats a match with a promotion, so the universal reference overload is invoked."
+The author gave a clear explanation. In case passing a function with `short`, "There are two overloads. The one taking a universal reference can deduce `T` to be `short&`, thus yielding an exact match (item 28 explains why `short&` not `short`). The overload with an `int` parameter can match the `short` argument only with a promotion. Per the normal overload resolution rules, an exact match beats a match with a promotion, so the universal reference overload is invoked." The other cases with `long` and `std::size_t` are the same.
 
 As compliation log shows, there is no string ctor taking a `short int&`, `long int&` or `long unsigned int&` to create a string, inside `multiset::emplace()`.
 
@@ -166,36 +166,115 @@ As compliation log shows, there is no string ctor taking a `short int&`, `long i
 ## Perfect-forwarding constructors
 *Credit to ISLA*
 
+The same problem happens when you overload on constructors taking universal reference. Consider example:
+
 ```c++
+#include <string>
+#include <iostream>
+#include <utility>
+
+std::string resolveName(int index)
+{
+    return "Foo";
+}
 class Person
 {
-	public:
-		template<typename T>
-		explicit person(T && name):_name(std::forward<T>(name)) {
-			std::cout<<"The template"<<std::endl;
-		}
+    public:
+    	template<typename T>
+	explicit Person(T&& name): name_(std::forward<T>(name)) 
+	{
+		std::cout<< __PRETTY_FUNCTION__ <<std::endl;
+	}
+	explicit Person(int index): name_(resolveName(index)) 
+	{
+		std::cout<< __PRETTY_FUNCTION__ <<std::endl;
+	}
 		
-		explicit person(int ind):_name("FOO") {
-			std::cout<<"The specific int"<<std::endl;
-		}
-		
-	private:
-		std::string _name;
+    private:
+    	std::string name_;
 	
-};
-class SpecialPerson : public Person 
-{
 };
 
 int main () 
 {
-	Person p("ISLA");
-	//const Person P_c("ISLA");
-	int i = 1000
-	short s = 12;
-	Person p2(i);
-	Person p3(s);
-	
-	Person my_new(p);
+    Person p("ISLA");
+    int i = 1000;
+    Person p2(i);    
+}
+///Output:
+Person::Person(T&&) [with T = const char (&)[5]]
+Person::Person(int)
+```
+The same problem we have above with other types than integer, `short`, `long`, `std::size_t`
+
+```c++
+    short s = 12;	
+    Person p3(s);	
+
+    ///Compilation error:    
+In instantiation of 'Person::Person(T&&) [with T = short int&]':
+...
+explicit Person(T&& name): name_(std::forward<T>(name)) {
+...
+no known conversion for argument 1 from 'short int' to 'std::__cxx11::basic_string<char>&&'
+```
+
+Two more problems:
+* Perfect forwarding ctor also beats default copy ctor
+* Inheritance
+
+### Perfect-forwarding ctor vs. copy ctor
+Ctor with universal reference also beats copy ctor. This has nothing todo with overloading universal reference but rather a problematic when you have a perfrect-forwarding ctor. 
+
+In the above example, default copy ctor is generated.
+```c++
+  public: 
+  // inline Person(const Person &) = default;
+```
+But it is never used because perfect-forwarding ctor is a better match for the following call:
+```c++
+
+int main () 
+{
+	Person p("ISLA");    
+	Person new_person(p);
+}
+
+//Compilation error:
+In instantiation of 'Person::Person(T&&) [with T = Person&]':
+   required from here
+no matching function for call to 'std::__cxx11::basic_string<char>::basic_string(Person&)'
+   explicit Person(T&& name): name_(std::forward<T>(name)) {
+                                                         ^
+```
+Ther is no string constructor taking `Person&` as a parameter.
+
+But when we declare `p` to be a `const`, then default copy constructor is invoked.
+```c++
+int main () 
+{
+    const Person p("ISLA");  // call overloading on universal reference
+    Person new_person(p);    // call default copy ctor because of better match 
+    		             // copy ctor: inline Person(const Person &)
 }
 ```
+### Perfect-forwarding ctor with inheritance
+The problem is more serious when we involve inheritance into our code. 
+
+```c++
+class SuperMan : public Person
+{
+    public:
+        SuperMan(const SuperMan& rhs) : Person(rhs) {};        //invoke Person' perfect-forwading ctor
+        SuperMan(SuperMan&& rhs) : Person(std::move(rhs)) {};  //invoke Person' perfect-forwading ctor 
+};
+//Compilation error for SuperMan copy ctor:
+In instantiation of 'Person::Person(T&&) [with T = const SuperMan&]':
+required from here
+error: no matching function for call to 'std::__cxx11::basic_string<char>::basic_string(const SuperMan&)'
+   13 |   explicit Person(T&& name): name_(std::forward<T>(name)) {
+      |                                                         ^
+      .....
+      
+```
+The code will not compile because no `string` ctor takes `SuperMan` as argument.
