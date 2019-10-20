@@ -1,6 +1,7 @@
 					*Code and text from the book*
 
-## Overloading on universal references leads to the universal reference overload being called more frequently than expected
+## Overloading on universal reference of freestanding functions
+
 Without overloading the following code is inefficient.
 
 ```c++
@@ -163,10 +164,12 @@ As compliation log shows, there is no string ctor taking a `short int&`, `long i
 
 "Functions taking universal references are the greediest functions in C++. They instantiate to create exact matches for almost any type of argument (except few types in Item 30). The universal overload vacuums up far more argument types than expected."
 
-## Perfect-forwarding constructors
-*Credit to ISLA*
+Overloading on universal references leads to the universal reference overload being called more frequently than expected
 
-The same problem happens when you overload on constructors taking universal reference. Consider example:
+## Overloading on universal reference of member functions
+*Credits to ISLA*
+
+The same problem happens when you overload on constructors taking universal reference (perfect-forwarding constructors). Consider example:
 
 ```c++
 #include <string>
