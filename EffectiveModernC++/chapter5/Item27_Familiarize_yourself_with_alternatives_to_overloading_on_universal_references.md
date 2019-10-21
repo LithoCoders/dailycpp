@@ -177,7 +177,7 @@ explicit Person(T&& n);
 ```
 In C++14, you can get rid of typename keyword by using `std::enable_if_t` and `std::decay_t` as shown below:
 
-```c++11
+```c++
 class Person { // C++14
 public:
 template<
