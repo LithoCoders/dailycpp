@@ -134,7 +134,7 @@ explicit Person(T&& n);
 ```
 To specify the condition that the type `T` is not same as the person, you can use the type trait `std::is_same`. However, `std::is_same`
 would evaluate to false if the type is of `T&`, even though that is not the intention. So, `Person` and `Person&` would not be
-considered as the same type by `std::is_same'. To get rid of this, we can use the other type trait `std::decay`. `std::decay` would 
+considered as the same type by `std::is_same`. To get rid of this, we can use the other type trait `std::decay`. `std::decay` would 
 strip the type of references, const and volatiles.
 
 ```c++
