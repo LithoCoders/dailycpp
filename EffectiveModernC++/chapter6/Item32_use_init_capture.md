@@ -11,7 +11,6 @@ capture mechanism known as init capture. Advantages of using init capture:
 Take for example, the following snippet of code:
 
 ```c++
-// This file is a "Hello, world!" in C++ language by GCC for wandbox.
 #include <iostream>
 #include <cstdlib>
 #include <utility>
@@ -52,9 +51,71 @@ int main()
 ```
 
 In the above case, the expression `pw = std::move(pw)` refers to init capture. The left side of the expression indicates the name of
-data member in the closure and the right side indicates the object which is in the scope of the lambda. In C++11, you can either write your 
-own class or you can accomplish this by the use of `std::bind`.
+data member in the closure that is generated and the right side indicates the object which is in the scope of the lambda. Output from cppinsight:
+```c++
+#include <iostream>
+#include <cstdlib>
+#include <utility>
+#include <memory>
+class Person
+{
+  
+  public: 
+  inline Person(std::basic_string<char> name)
+  : _name{std::basic_string<char>(name)}
+  {
+  }
+  
+  inline void printName()
+  {
+    std::operator<<(std::cout, this->_name).operator<<(std::endl);
+  }
+  
+  inline void setName(std::basic_string<char> name)
+  {
+    this->_name.operator=(name);
+  }
+  
+  
+  private: 
+  std::basic_string<char> _name;
+  int _age;
+  public: 
+  // inline ~Person() = default;
+};
+int main()
+{
+  std::unique_ptr<Person, std::default_delete<Person> > pw = std::unique_ptr<Person, std::default_delete<Person> >(std::make_unique<Person>("Name1"));
+  pw.operator->()->printName();
+    
+  class __lambda_28_17
+  {
+    public: 
+    inline void operator()() const
+    {
+      std::operator<<(std::cout, "Entering Lambda").operator<<(std::endl);
+      pw.operator->()->setName(std::basic_string<char>(std::basic_string<char>("Name2", std::allocator<char>())));
+      pw.operator->()->printName();
+    }
+    
+    private: 
+    std::unique_ptr<Person, std::default_delete<Person> > pw;
+    public: 
+    // inline __lambda_28_17(const __lambda_28_17 &) = delete;
+    // inline __lambda_28_17(__lambda_28_17 &&) noexcept = default;
+    __lambda_28_17(std::unique_ptr<Person, std::default_delete<Person> > && _pw)
+    : pw{std::move(_pw)}
+    {}
+    
+  };
+  
+  __lambda_28_17 func = __lambda_28_17(__lambda_28_17{std::unique_ptr<Person, std::default_delete<Person> >(std::move(pw))});
+  func.operator()();
+  pw.operator->()->printName();
+}
+```
 
+In C++11, you can either write your own class or you can accomplish this by the use of `std::bind`:
 ```c++
 std::vector<double> data; // object to be moved
 // into closure
