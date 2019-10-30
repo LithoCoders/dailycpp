@@ -1,5 +1,5 @@
 
-#Item 32- Use init captures to move objects into closeures
+# Item 32- Use init captures to move objects into closeures
 
 If you have a move-only object(i.e. `std::unique_ptr`) which needs to go into a closure, C++11 offers no way to accomplish this. C++14
 offers mechanisms to move objects into closures. In order to overcome this limitation in C++11, the standardization commitee provided a new
