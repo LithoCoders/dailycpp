@@ -123,6 +123,41 @@ std::vector<double> data; // object to be moved
 auto func = [data = std::move(data)] {}//C++14
 ```
 
+Output of cppinsight(C++14):
+```c++
+// This file is a "Hello, world!" in C++ language by GCC for wandbox.
+#include <iostream>
+#include <cstdlib>
+#include <utility>
+#include <memory>
+#include<vector>
+#include<functional>
+
+int main()
+{
+  std::vector<double> data = std::vector<double, std::allocator<double> >();
+    
+  class __lambda_13_14
+  {
+    public: 
+    inline void operator()() const
+    {
+    }
+    
+    private: 
+    std::vector<double, std::allocator<double> > data;
+    public: 
+    // inline __lambda_13_14(__lambda_13_14 &&) noexcept = default;
+    __lambda_13_14(std::vector<double, std::allocator<double> > && _data)
+    : data{std::move(_data)}
+    {}
+    
+  };
+  
+  __lambda_13_14 func = __lambda_13_14(__lambda_13_14{std::vector<double, std::allocator<double> >(std::move(data))});
+}
+```
+
 The first argument to `std::bind` is a callable object. The subsequent arguments are the values that will be passed to the object.
 ```c++
 auto func =
@@ -132,6 +167,40 @@ std::bind( // C++11 emulation
 std::move(data)
 );
 ```
+Output of cppinsight (C++11):
+```c++
+int main()
+{
+  std::vector<double> data = std::vector<double, std::allocator<double> >();
+      
+  class __lambda_14_19
+  {
+    public: 
+    inline void operator()(const std::vector<double, std::allocator<double> > & data) const
+    {
+    }
+    
+    using retType_14_19 = void (*)(const std::vector<double> &);
+    inline operator retType_14_19 () const noexcept
+    {
+      return __invoke;
+    };
+    
+    private: 
+    static inline void __invoke(const std::vector<double, std::allocator<double> > & data)
+    {
+    }
+    
+    public: 
+    // inline /*constexpr */ __lambda_14_19(__lambda_14_19 &&) noexcept = default;
+    
+  };
+  
+  std::_Bind<__lambda_14_19> func = std::_Bind<__lambda_14_19>(std::bind(__lambda_14_19{}, std::move(data)));
+}
+```
+How does`std::bind` behave? If the argument is an lvalue, then the corresponding argument is copy constructed and if it's an rvalue then
+it is move constructed.
 
 Things to remember from this item:
 * In C++14, use init captures to move objects in closure.
