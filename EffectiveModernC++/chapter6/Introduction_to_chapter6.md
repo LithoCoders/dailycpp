@@ -60,7 +60,7 @@ This closure class *captures* `x` and `y` from the main function and makes them 
 3. Closure - runtime object of closure class. 
 ```c++
 __lambda_9_7 l = __lambda_9_7{x, y};  // l is a closure
-													            // __lambda_9_7 is a closure class
+	                              // __lambda_9_7 is a closure class
 ```
 We can have multiple closures from a closure type. 
 ```c++
