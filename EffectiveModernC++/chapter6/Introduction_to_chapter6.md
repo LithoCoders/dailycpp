@@ -1,3 +1,4 @@
+# Application
 Lambdas are convenience way to create function objects. 
 It has a wide range of applications:
 * STL `_if` algorithms such as `find_if`, `remove_if`, `count_if`
@@ -8,7 +9,7 @@ It has a wide range of applications:
 * interface adaptation functions. ?
 * context-specific functions for one-off calls. ?
 
-Vocabulary:
+# Vocabulary
 1. Lambda expression
 ```c++
 #include <iostream>
@@ -57,7 +58,7 @@ int main()
 This closure class *captures* `x` and `y` from the main function and makes them as private member data. It has one constructor taking `x` and `y` to initialize its private data member.
 `operator()()` (same to functor ?) is the body of lambda.
 
-3. Closure - runtime object of closure class. 
+3. Closure: is the runtime object, instantiation of a closure class. 
 ```c++
 __lambda_9_7 l = __lambda_9_7{x, y};  // l is a closure
 	                              // __lambda_9_7 is a closure class
@@ -118,4 +119,49 @@ int main()
   std::cout.operator<<(l3.operator()());
   return 0;
 }
+```
+# Syntax
+```c++
+ 1   2   3         4        
+[=] () throw() -> int
+{                              5
+                int n;
+                return n;
+}              
+```
+1. capture clause (Also known as the lambda-introducer in the C++ specification.)
+2. parameter list (Optional). (Also known as the lambda declarator)
+3. exception-specification (Optional).
+4. trailing-return-type (Optional).
+5. lambda body.
+
+# Play around
+```c++
+#include <iostream>
+#include <functional>
+
+//because all lambdas return boolean so this query_req also returns boolean
+bool query_req(std::function<bool(int,int)> func,int c,int d) 
+{
+    return func(c,d);
+}
+
+int main()
+{
+  int z = 5; int y = 0; int x = 3;
+  
+  auto c1 = [] (int a, int b) { return a< b;};
+  auto c2 = [] (int a, int b) { return a > b;};
+  auto c3 = [&z, &y, &x] () { x++; return z > y;};
+  std::cout << std::boolalpha;
+  std::cout << query_req(c1,1,2) << std::endl;
+  std::cout << query_req(c2,1,2) << std::endl;
+  std::cout << c3() <<std::endl;
+    
+  return 0;
+}
+\\Output
+true
+false
+true
 ```
