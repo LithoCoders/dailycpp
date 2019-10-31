@@ -147,7 +147,8 @@ auto c = []
            (auto&& x)                                     //still. x is a universal reference
                { func( std::forward<decltype(x)>(x) ) }   //perfect-forwarding to func
 ```
-Add more dots to make it support variadic template
+# Generic lambdas + perfect forwarding + variadic
+Add more dots to make it support variadic
 ```c++
 auto c = [] 
            (auto&&... xs)                                     //still. x is a universal reference
