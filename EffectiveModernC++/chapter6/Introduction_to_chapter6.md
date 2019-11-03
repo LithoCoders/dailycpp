@@ -10,7 +10,7 @@ It has a wide range of applications:
 * context-specific functions for one-off calls. ?
 
 # Vocabulary
-1. Lambda expression
+## Lambda expression
 ```c++
 #include <iostream>
 
@@ -21,13 +21,28 @@ int main()
     
     auto l = 
       [=] () -> int { return x + y; };    //lambda expression
-    std::cout << l();  
-  
+    std::cout << l();   
   
     return 0;
 }
 ```
-2. Closure class: each lambda causes compilers to generate a unique closure class at compile time.
+**Syntax**
+```c++
+ 1   2   3         4        
+[=] () throw() -> int
+{                              5
+                int n;
+                return n;
+}              
+```
+* 1 - capture clause (Also known as the lambda-introducer in the C++ specification.)
+* 2 - parameter list. Also known as the lambda declarator, it can take no parameters
+* 3 - exception-specification (Optional).
+* 4 - trailing-return-type (Optional).
+* 5 - lambda body.
+
+## Closure class
+Each lambda causes compilers to generate a unique closure class at compile time.
 For example, a closure class in the above example is `__lambda_9_7` below. We use C++ Insight, Standard C++ 2a
 ```c++
 #include <iostream>
@@ -58,7 +73,8 @@ int main()
 This closure class *captures* `x` and `y` from the main function and makes them as private member data. It has one constructor taking `x` and `y` to initialize its private data member.
 `operator()()` (same to functor ?) is the body of lambda.
 
-3. Closure: is the runtime object, instantiation of a closure class. 
+## Closure
+is the runtime object, instantiation of a closure class. 
 ```c++
 __lambda_9_7 l = __lambda_9_7{x, y};  // l is a closure
 	                              // __lambda_9_7 is a closure class
@@ -74,8 +90,8 @@ int main()
     
     auto l = 
       [=] () -> int { return x + y; };    //lambda expression
-    auto l2 = l;
-    auto l3 = l2;
+    auto l2 = l;    //copy ctor needed for lambda
+    auto l3 = l2;   //copy ctor needed for lambda
     std::cout << l() << l2() << l3();    
     return 0;
 }
@@ -94,23 +110,18 @@ int main()
   class __lambda_9_7
   {
     public: 
-    inline /*constexpr */ int operator()() const
-    {
-      return x + y;
-    }
+    	inline /*constexpr */ int operator()() const
+    	{
+      	return x + y;
+    	}
     
     private: 
-    int x;
-    int y;
+    	int x;
+    	int y;
     public: 
-    // inline /*constexpr */ __lambda_9_7(const __lambda_9_7 &) noexcept = default;
-    __lambda_9_7(int _x, int _y)
-    : x{_x}
-    , y{_y}
-    {}
-    
-  };
-  
+    	// inline /*constexpr */ __lambda_9_7(const __lambda_9_7 &) noexcept = default;
+    	__lambda_9_7(int _x, int _y) : x{_x}, y{_y} {}
+  };  
   __lambda_9_7 l = __lambda_9_7{x, y};
   __lambda_9_7 l2 = __lambda_9_7(l);
   __lambda_9_7 l3 = __lambda_9_7(l2);
@@ -120,21 +131,6 @@ int main()
   return 0;
 }
 ```
-# Syntax
-```c++
- 1   2   3         4        
-[=] () throw() -> int
-{                              5
-                int n;
-                return n;
-}              
-```
-1. capture clause (Also known as the lambda-introducer in the C++ specification.)
-2. parameter list (Optional). (Also known as the lambda declarator)
-3. exception-specification (Optional).
-4. trailing-return-type (Optional).
-5. lambda body.
-
 # Play around
 ```c++
 #include <iostream>
@@ -156,7 +152,7 @@ int main()
   std::cout << std::boolalpha;
   std::cout << query_req(c1,1,2) << std::endl;
   std::cout << query_req(c2,1,2) << std::endl;
-  std::cout << c3() <<std::endl;
+  std::cout << c3() <<std::endl;  // x is 4
     
   return 0;
 }
