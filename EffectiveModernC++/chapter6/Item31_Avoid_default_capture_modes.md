@@ -1,20 +1,79 @@
 *Credits to ISLA*
+There are two default capture modes in lambda: capture by reference and capture by value. Capture by reference can lead to dangling reference whereas, capture by value xxxx.
+# Problem with default capture by reference
+```c++
+#include<vector>
+#include<functional>
+#include<iostream>
 
---- TO BE CLEANED---
-using FilterContainer = // see Item 9 for
-std::vector<std::function<bool(int)>>;
+using FilterContainer = std::vector<std::function<bool(int)>>;
 FilterContainer filters;
+
 void addDivisorFilter()
 {
-auto calc1 = computeSomeValue1();
-auto calc2 = computeSomeValue2();
-auto divisor = computeDivisor(calc1, calc2);
-filters.emplace_back( // danger!
-[&divisor](int value) { return value % divisor == 0; } // ref to
-); // divisor
+    auto divisor = 2 ;
+    filters.emplace_back(
+                         [&] //default capture by reference
+                          (int value) {std::cout << divisor << std::endl; return value % divisor == 0;}
+                        );   
 }
 
+int main()
+{
+    addDivisorFilter();
+    if(filters.size() > 0)
+    {
+        auto f= filters[0];
+        std::cout << std::boolalpha << f(4);
+    }
+    return 0;        
+}
+//Output:
+32767
+false
+```
+In the above example, `filters` has a list of lambdas. Whereas all of them capture `divisor` by reference. At the call side in `main`, lamda has no knowledge of `divisor` as it ceases after its scope `addDivisorFilter()`. `divisor` takes a random number and thus our expectation, `4 % 2` is not meet.
 
+Even though we make capture `divisor` specifically, we still have the same problem with default capture by reference. However writting it down clearly `[&divisor]` raises a concern to see if `divisor` still exists when calling lambdas.
+```c++
+    filters.emplace_back(
+                         [&divisor] //same problem as above
+                          (int value) {std::cout << divisor << std::endl; return value % divisor == 0;}
+                        );   
+```
+Fix this problem with default capture by value
+```c++
+#include<vector>
+#include<functional>
+#include<iostream>
+
+using FilterContainer = std::vector<std::function<bool(int)>>;
+FilterContainer filters;
+
+void addDivisorFilter()
+{
+    auto divisor = 2 ;
+    filters.emplace_back(
+                         [=] //default capture by value
+                          (int value) {std::cout << divisor << std::endl; return value % divisor == 0;}
+                        );   
+}
+
+int main()
+{
+    addDivisorFilter();
+    if(filters.size() > 0)
+    {
+        auto f= filters[0];
+        std::cout << std::boolalpha << f(4);
+    }
+    return 0;        
+}
+//Output
+2
+true
+```
+# Default capture by value - problem
 ----------------------------------------------------------------------------
 template<typename C>
 void workWithContainer(const C& container)
