@@ -17,7 +17,7 @@ int main()
     lCaptureByValue();
     std::cout << x << "  " << y << std::endl;
     
-    auto lCaptureByRef = [&] () -> bool
+    auto lCaptureByRef = [&] () -> bool    //capture-by-ref for both x and y
     {        
         std::cout << "Inside lCaptureByRef &x : " << &x << std::endl;        
         x--;        
