@@ -66,3 +66,12 @@ int main()
     return 0;
 }
 ```
+
+Item 34 and two more resources[1] suggest to replace lambda with `std::bind`. 
+
+The lambda version of the above code is below. We need to capture `this` and call private function `subcription_callback()` inside lambda.
+```c++
+  pub.subscribe([this](){subscription_callback();});
+```
+
+[1] C++ Weekly - Ep 16 Avoiding `std::bind`  https://www.youtube.com/watch?v=ZlHi8txU4aQ
