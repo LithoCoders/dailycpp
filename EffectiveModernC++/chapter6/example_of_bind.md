@@ -1,3 +1,5 @@
+# Subscriber & Publisher using `std::bind`
+
 ```c++
 #include <iostream>
 #include <cstdlib>
@@ -66,8 +68,9 @@ int main()
     return 0;
 }
 ```
+# Subscriber & Publisher using lambda
 
-Item 34 and two more resources[1] suggest to replace lambda with `std::bind`. 
+Item 34 and one more resource[1] suggest to replace lambda with `std::bind`. 
 
 The lambda version of the above code is below. We need to capture `this` and call private function `subcription_callback()` inside lambda.
 ```c++
@@ -75,3 +78,46 @@ The lambda version of the above code is below. We need to capture `this` and cal
 ```
 
 [1] C++ Weekly - Ep 16 Avoiding `std::bind`  https://www.youtube.com/watch?v=ZlHi8txU4aQ
+
+# Benchmarking
+Lambda version seems to be ~80 times faster (which needs to understand why?) than `std::bind`
+
+```c++
+#include <iostream>
+#include <functional>
+
+static void lambda_version(benchmark::State& state) {
+  // Code inside this loop is measured repeatedly
+  for (auto _ : state) {
+    int lowVal = 0;
+    int highVal = 10;
+    
+    auto betweenL = [lowVal, highVal] (const auto& val) {return lowVal <= val && val <= highVal; };
+
+
+    benchmark::DoNotOptimize(highVal);
+    benchmark::DoNotOptimize(lowVal);
+  }
+}
+// Register the function as a benchmark
+BENCHMARK(lambda_version);
+
+static void bind_version(benchmark::State& state) {
+  // Code before the loop is not measured
+  
+  for (auto _ : state) {
+    int lowVal = 0;
+    int highVal = 10;
+    using namespace std::placeholders;
+    auto betweenB = std::bind(std::logical_and<>(),
+                               std::bind(std::less_equal<>(), lowVal, _1),
+                               std::bind(std::less_equal<>(), _1, highVal)
+                             );
+
+    benchmark::DoNotOptimize(highVal);
+    benchmark::DoNotOptimize(lowVal);
+  }
+}
+BENCHMARK(bind_version);
+
+```
