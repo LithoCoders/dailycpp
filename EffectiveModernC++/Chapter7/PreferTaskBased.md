@@ -10,11 +10,14 @@ Let's have a quick look at a simple example that
 ```c++
 #include<iostream>
 #include <thread>
+#include <mutex>
 
 int shared_variable = 100;
+std::mutex mutex;
 
 int worker(int thread_id)
 {
+    std::lock_guard<std::mutex> lockGuard(mutex);
     std::cout<<"thread"<<thread_id<<std::endl;
     shared_variable = shared_variable - 10;
     return 0;
@@ -38,4 +41,9 @@ int main()
 }
 ```
 
-Try to run this code multiple times and you will notice that each time, you will get a different result.
+In order to prevent access to the shared resource my multiple threads simultaneously, `std::mutex` is used. `std::lock_guard` 
+object is used to lock the mutex during its construction and automatically releases it when it goes out of scope(i.e it's destructor is called).
+Try to run this code without mutex multiple times and you will notice that each time, you will get a different result. This is because each
+of the thread starts execution concurrently and they access the `std::cout` and shared variable simultaneously. 
+
+
