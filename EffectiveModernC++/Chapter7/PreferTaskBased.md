@@ -6,7 +6,7 @@ multithreaded applications that have standard behavior accross platforms. Let's 
 to cplusplus.com : "A thread of execution is a sequence of instructions that can be executed concurrently with other such sequences in
 multithreading environments, while sharing a same address space."
 
-Let's have a quick look at a simple example that 
+Let's have a quick look at a simple example that illustrates threads:
 ```c++
 #include<iostream>
 #include <thread>
