@@ -4,11 +4,29 @@ In previous item, we learn to prefer `std::async` to `std::thread`. There are tw
 
 When you don't mention explicitly launch policy, the default one is applied. The default launch policy is neither of these. 
 ```c++
-void f();
+#include <future>
+#include <iostream>
+ 
+void f() { std::cout << "Hello" << std::endl; };
 
-auto fut1 = std::async(f); //default launch policy
+int main()
+{
+    auto fut_undefined = std::async(std::launch::async, f);
+    auto fut_async = std::async(std::launch::async, f);
+    auto fut_deferred = std::async(std::launch::deferred, f);
+    
+    auto fut2 = std::async(std::launch::async | std::launch::deferred, f); // dont know what is this?
+    
+    fut_deferred.get();
+    return 0;
+}
+//Output:
+HelloHello
 
-auto fut2 = std::async(std::launch::async | std::launch::deferred, f); //either async or deferred
+Hello
+Hello
+
+0
 
 ```
 
