@@ -103,3 +103,51 @@ hier...
 thread 140469271582464
 ```
 It seems, by luck the above thread is run asynchronously. In case, it is run synchronously, it can run forever.
+Without luck, if thread is run synchronously, `f` is deferred, `fut` runs with `async::launch::deferred` policy, `fut.wait_for()` always returns `std::future_status::deferred`, it never equals to `std::future_status::ready`, loop runs forever.
+
+If machine is overloaded: oversubcription or thread exhaustion, task may be most likely to be deferred. On the other hand, task may be most likely to be run asynchronously.
+
+Fix by checking if task is deferred:
+```c++
+#include <future>
+#include <iostream>
+using namespace std::literals;
+
+void f()
+{
+ std::this_thread::sleep_for(1s); //sleep for one second then return
+}
+
+int main()
+{
+    auto fut = std::async(std::launch::deferred, f);  //default launch policy, can be std::launch::deferred
+    
+    if(fut.wait_for(0s) == std::future_status::deferred)
+    {
+            std::cout << "std::future_status::deferred..." << std::endl;
+            fut.get();
+    }
+    else
+    {
+        while(fut.wait_for(100ms) != std::future_status::ready) //assuming f finishes
+        {
+            std::cout << "task is not deferred nor ready..." << std::endl;
+        }
+    }
+    return 0;
+}
+
+//Output:
+std::future_status::deferred...
+
+0
+```
+## Things to Remember
+• The default launch policy for std::async permits both asynchronous and
+synchronous task execution.
+• This flexibility leads to uncertainty when accessing thread_locals, implies
+that the task may never execute, and affects program logic for timeout-based
+wait calls.
+• Specify std::launch::async if asynchronous task execution is essential.
+
+
