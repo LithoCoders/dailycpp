@@ -97,7 +97,7 @@ int main()
     std::thread t_static_member_function = std::thread(&Widget::static_funct); //no need any instantiated object   
     
     Widget w;
-    std::thread t_nonstatic_member_function = std::thread(&Widget::funct, &w); //runs `Widget::funct()` on object w
+    std::thread t_nonstatic_member_function = std::thread(&Widget::funct, &w); //runs Widget::funct() on object w
     
     std::thread t_lambda = std::thread([](){});
     
