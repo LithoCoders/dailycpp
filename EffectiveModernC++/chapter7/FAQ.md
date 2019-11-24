@@ -10,7 +10,7 @@
 9. Example with `detach` ?
 
 # Answers
-7. How to create a `std::thread` object ?
+## 7. How to create a `std::thread` object ?
 We can create an object of `std::thread` from:
 * a callable and its parameters
   * functor
@@ -64,7 +64,7 @@ int main()
 }
 //main thread waits until all six threads are joined.
 ```
-8. What are *joinable* and *unjoinable* ?
+## 8. What are *joinable* and *unjoinable* ?
 After threads are created, they are in *joinable* states. In above example, they can join the `main` thread or detach from main thread.
 Opposite to this state is *unjoinable* state. Example, after joining or detaching, they are *unjoinable*.
 
@@ -125,7 +125,7 @@ int main()
 ```
 Other reading: https://medium.com/@vgasparyan1995/let-me-detach-those-threads-for-you-2de014b26394
 
-9. Example with `detach` ?
+## 9. Example with `detach` ?
 Detaching the thread from its calling thread. Both run independently from each other. Each of them releases resource when it ends execution. 
 
 ```c++
