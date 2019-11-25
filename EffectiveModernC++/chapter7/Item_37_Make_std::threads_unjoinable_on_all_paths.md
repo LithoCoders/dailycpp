@@ -43,6 +43,7 @@ bool doWork(std::function<bool(int)> filter, int maxVal = tenMillion)
     auto native_handle = t.native_handle();
     
     //set t's priority via native handle
+    //why set priority after creating t ? 
     
     if(ConditionSatisfied())
     {
