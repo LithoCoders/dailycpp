@@ -8,6 +8,7 @@
 7. How to create a `std::thread` object ?
 8. What are *joinable* and *unjoinable* ?
 9. Example with `detach` ?
+10. Can you create a `std::thread` with `std::function` ? to be merged with 7.
 
 # Answers
 ## 7. How to create a `std::thread` object ?
