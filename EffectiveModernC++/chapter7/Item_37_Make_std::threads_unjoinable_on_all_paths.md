@@ -117,50 +117,126 @@ class ThreadRAII
 {
   public:
     enum class DestructorAction { join, detach };
-    ThreadRAII(std::thread&& t, DestructorAction a) : action(a),
-t(std::move(t)) {}
-
+    
+    //ctor accepts only rvalue of std::thread because we don't want to copy a thread object
+    //order of ctor:init action first before thread since data members are set before running thread.
+    ThreadRAII(std::thread&& t, DestructorAction a) : action(a), t(std::move(t)) {}
+    
+    //dtor checks if thread is joinable before calling join() or detach()
+    //if thread is unjoinable, calling these two yields undefined behavior
     ~ThreadRAII(){
         if (t.joinable()){
             if (action == DestructorAction::join)
-            {
-                std::cout << std::this_thread::get_id() << " about to
-joined .." << std::endl;
+            {                
+                std::cout << " about to joined ..\n";
                 t.join();
             }
             else
             {
-                std::cout << std::this_thread::get_id() << " about to
-detached .." << std::endl;
-                t.detach();
+                std::cout << " about to detached ..\n";
+                t.detach();            
             }
         }
     }
-
+    
+    //get function to acces to underlying std::thread. Like, smart pointers
     std::thread& get() { return t; }
-
+    
   private:
     DestructorAction action;
-    std::thread t;
+    std::thread t;           
 };
 
 int main()
 {
-    // std::thread t_join = std::thread([](){});
-    ThreadRAII tRAII_join = ThreadRAII(std::thread([](){}),
-ThreadRAII::DestructorAction::join);
-
-    std::thread t_detach = std::thread([](){});
-    ThreadRAII tRAII_detach = ThreadRAII(std::move(t_detach),
-ThreadRAII::DestructorAction::detach);
-
-    std::cout << std::this_thread::get_id() << " about to end .." << std::endl;
+    ThreadRAII tRAII_join (std::thread([](){std::cout << std::this_thread::get_id() << std::endl;}),
+                           ThreadRAII::DestructorAction::join);
+    
+    std::thread t_detach = std::thread([](){std::cout << std::this_thread::get_id() << std::endl;});
+    ThreadRAII tRAII_detach (std::move(t_detach), 
+                             ThreadRAII::DestructorAction::detach);
+    
+    std::cout << std::this_thread::get_id() << " about to end ..\n";
     return 0;
 }
+
 /*Output
-140700301862720 about to end ..
-140700301862720 about to detached ..
-140700301862720 about to joined ..
+140437722859328 about to end ..
+ about to detached ..
+ about to joined ..
+140437696722688
+140437705115392
 */
 ```
+The output is chaotic but we know, there are three asynchronous threads (including `main`). Main thread calls dtor of `ThreadRAII` objects so that we see threads join or detach.
 
+ If `get()` function of smart pointers give us the access to underlying raw pointer, `ThreadRAII` provides `get()` function to access to underlying `std::thread`.
+ 
+ We can have the following code
+ ```c++
+    ThreadRAII tRAII_join (std::thread([](){std::cout << std::this_thread::get_id() << std::endl;}),
+                           ThreadRAII::DestructorAction::join);   
+    
+    std::thread fooThread = std::move(tRAII_join.get());
+    fooThread.join();  //We need to call join() or detach()    
+ ```
+ As such, dtor of `tRAII_join` is not called because data member `t` is not joinable.
+ 
+ As a rule of three, it is nice to define move constructor and move assignment. We can ask compiler to generate these two for us.
+ 
+ ```c++
+#include <thread>
+#include <iostream>
+
+class ThreadRAII
+{
+  public:
+    enum class DestructorAction { join, detach };
+    ThreadRAII(std::thread&& t, DestructorAction a) : action(a), t(std::move(t)) {}
+    
+    ~ThreadRAII(){
+        if (t.joinable()){
+            if (action == DestructorAction::join)
+            {                
+                std::cout << " about to joined ..\n";
+                t.join();
+            }
+            else
+            {
+                std::cout << " about to detached ..\n";
+                t.detach();            
+            }
+        }
+    }
+    
+    ThreadRAII(ThreadRAII&& tRAII) = default;
+    ThreadRAII& operator=(ThreadRAII&& tRAII) = default;
+    
+    std::thread& get() { return t; }
+    
+  private:
+    DestructorAction action;
+    std::thread t;           
+};
+
+int main()
+{
+    ThreadRAII tRAII_join (std::thread([](){std::cout << std::this_thread::get_id() << std::endl;}),
+                           ThreadRAII::DestructorAction::join);
+    
+    std::thread t_detach = std::thread([](){std::cout << std::this_thread::get_id() << std::endl;});
+    ThreadRAII tRAII_detach (std::move(t_detach), 
+                             ThreadRAII::DestructorAction::detach);
+    
+    std::thread t = std::move(tRAII_join.get());
+    t.join();
+    
+    std::cout << std::this_thread::get_id() << " about to end ..\n";
+    return 0;
+}
+ ```
+ ## Things to remember:
+ * Make `std::thread` objects unjoinable on all paths: by code manually(e.g., join()/detach() ) or by deploying `RAII`.
+ * In RAII ctor, initialize `std::thread` at last.
+ * join-on-destruction can lead to performance issue
+ * detact-on-destruction can lead to undefined behavior
