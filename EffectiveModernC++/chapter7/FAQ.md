@@ -9,6 +9,9 @@
 8. What are *joinable* and *unjoinable* ?
 9. Example with `detach` ?
 10. Can you create a `std::thread` with `std::function` ? to be merged with 7.
+11. Try example of std::thread::native_handle from D's server https://en.cppreference.com/w/cpp/thread/thread/native_handle
+12. Create `std::ref` examples for lambda and `std::thread`
+13. Example with `size_t`
 
 # Answers
 ## 7. How to create a `std::thread` object ?
