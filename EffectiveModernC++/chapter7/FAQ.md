@@ -12,6 +12,7 @@
 11. Try example of std::thread::native_handle from D's server https://en.cppreference.com/w/cpp/thread/thread/native_handle
 12. Create `std::ref` examples for lambda and `std::thread`
 13. Example with `size_t`
+14. Is there any usecase to use mutext with `std::promise` and `std::future` ? -> Question 5.
 
 # Answers
 ## 7. How to create a `std::thread` object ?
