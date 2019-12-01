@@ -2,6 +2,10 @@
 
 Let us have a closer look to few concepts before diving into this item:
  ![](item-38-communication-channel.png) 
+ 
+* The callee writes the result of its computation into the channel via `std::promise`
+* The caller reads that result using `future`
+* Result is stored outside of both `promise` and `future`, i.e., *shared state*
 
 ```c++
 #include <thread>
@@ -64,14 +68,26 @@ result=21
 Source: https://people.cs.pitt.edu/~xianeizhang/notes/Concurrency.html
 
 # Item 38: Be aware of varying thread handle destructor behavior
-Both `std::thread` objects are future objects are considered to be *handles* to system threads. 
+Both `std::thread` objects and future objects are considered to be *handles* to system threads. 
 They have different destructor behaviors.
 * `std::thread` dtor:
   As we learned in item 37, `std::thread` dtor of a joinable thread causes the program to terminate. So, we need to *make `std::thread` unjoinable on all paths*. There is no such implicit join nor implicit detach of `std::thread` dtor.
 * future dtor:
   As opposite to `std::thread` dtor, future dtor can be implicit join, or implicit detach, or neither of these. Therefore, future dtor never causes the program to terminate.
 
- 
+The behavior of `std::future`'s dtor is determined by the shared state associated with the future.
+* "The dtor for the last future referring to a shared state for a non-deferred task launched via `std::async` blocks until the task completes."
+* "The dtor for all other futures simply destroys the future object."
+
+So, future's dtor destroys the future object (future's data members); it also decreases reference count of shared state.
+
+Exceptions:
+* "It refers to a shared state that was created due to a call to `std::async`."
+* "The task's launch policy is `std::launch::async`."
+* "The future is the last future referring to the shared state."
+
+//TODO
+
 ## Things to remember:
 * Future destructors destroy the future's data members
 * Final future - shared state - non-deferred task (std::async) blocks until the task completes
