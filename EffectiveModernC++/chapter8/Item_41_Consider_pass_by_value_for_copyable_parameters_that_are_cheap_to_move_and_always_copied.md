@@ -14,7 +14,6 @@ class Widget
     public:        
         void addName(std::string newName) 
         { 
-            std::cout << "param's address " << &newName  << " " << newName << std::endl ; 
             names.push_back(std::move(newName)); 
         }        
         void printNames()
@@ -34,7 +33,7 @@ int main()
 {
     Widget w;
     std::string s = "hello ";
-    std::cout << "lvalue's adress " << &s << std::endl;
+    std::cout << "hello's adress " << &s << std::endl;
     w.addName(s);
     w.addName("world!");
     
@@ -43,7 +42,6 @@ int main()
     
     w.printAddresses();
 }
-
 ```
 
 ## Two functions do the same thing
