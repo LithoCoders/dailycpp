@@ -1,9 +1,8 @@
 # Item 41: Consider pass-by-value for copyable parameters that are cheap to move and always copied
 
-For efficiency, a function should copy  lvalue arguments, but move rvalue arguments. Example: `push_back()` function of `std::vector` takes both lvalue and rvalue.
+For efficiency, a function should copy lvalue arguments, but move rvalue arguments. Example: `push_back()` function of `std::vector` takes both lvalue and rvalue.
 
-!!!Debug me!!! OR TRY WITH VECTOR OF INTEGER FOR SIMPLIFICATION.
-
+## Two functions do the same thing
 ```c++
 #include <string>
 #include <vector>
@@ -12,19 +11,17 @@ For efficiency, a function should copy  lvalue arguments, but move rvalue argume
 class Widget
 {
     public:        
-        void addName(std::string newName) 
-        { 
-            names.push_back(std::move(newName)); 
-        }        
+        void addName(const std::string& newName) { names.push_back(newName); }         //perform a copy
+        void addName(std::string&& newName) { names.push_back(std::move(newName)); }   //perform a move
+    
         void printNames()
         { 
             for (auto name: names) 
                 std::cout << name; 
         }    
         void printAddresses() { 
-            for ( auto i : names ) 
-                std::cout << &(i) << std::endl; //something is wrong here
-                                                //cant get address of each element in vector
+            for (unsigned int i = 0; i < names.size(); i++ ) 
+                std::cout << &(names[i]) << std::endl;                                                
         } 
     private:
         std::vector<std::string> names;
@@ -33,59 +30,26 @@ int main()
 {
     Widget w;
     std::string s = "hello ";
-    std::cout << "hello's adress " << &s << std::endl;
+    std::cout << "local variable's adress " << &s << std::endl;
     w.addName(s);
     w.addName("world!");
     
     w.printNames();    
     std::cout << "\n";
     
-    w.printAddresses();
-}
-```
-
-## Two functions do the same thing
-
-```c++
-#include <string>
-#include <vector>
-#include <utility>
-#include <iostream>
-class Widget
-{
-    public:
-        void addName(const std::string& newName) { names.push_back(newName); }         //perform a copy
-        void addName(std::string&& newName) { names.push_back(std::move(newName)); }   //perform a move
-    
-        void printNames(){ for (auto name: names) std::cout << name; }
-        void printAddresses() { for (int i = 0; i< names.size(); i++) std::cout << &names[i] << std::endl;}  //todo: re-write this with for range loop
-    private:
-        std::vector<std::string> names;
-};
-int main()
-{
-    Widget w;
-    std::string s = "hello ";
-    w.addName(s);
-    w.addName("world!");
-    
-    w.printNames();    
-    std::cout << "\n";
-    std::cout << &s << std::endl;
     w.printAddresses();
 }
 /*Output:
+local variable's adress 0x7ffed9b12cb0
 hello world!
-0x7fff8b7c6d30
-0x135b180
-0x135b1a0
-*/
+0xafb190
+0xafb1b0 */
 ```
 We see that two functions doing the same thing but we need to maintain both of them. When two functions are not inline, then we have two functions in the object code.
 
 ## Two functions are replaced with one function template taking universal reference
 
-Let us see how does universal reference help in this case:
+Let us see how does universal reference can help in this case:
 
 ```c++
 template<typename T>
@@ -100,7 +64,7 @@ Disavantages:
 * Improper argument types lead to scary compiler error messages
 
 Let us consider the fact, several instantiations are generated from one function template taking universal reference. Thus, several functions in object code.
-I don't know compatible types of `std::string so let's simplify function with integers.
+I don't know compatible types of `std::string` so let's simplify function with integers.
 ```c++
 #include <string>
 #include <vector>
@@ -169,8 +133,7 @@ class Widget
   {
     this->v.push_back(static_cast<int>(std::forward<long &>(i)));
   }
-  #endif
-  
+  #endif 
   
   private: 
   std::vector<int, std::allocator<int> > v;
@@ -178,7 +141,6 @@ class Widget
   // inline ~Widget() noexcept = default;
   // inline Widget() noexcept = default;
 };
-
 
 int main()
 {
@@ -192,6 +154,50 @@ int main()
 ```
 ## Pass-by-value function is a good fit in this case
 
+```c++
+#include <string>
+#include <vector>
+#include <utility>
+#include <iostream>
+class Widget
+{
+    public:        
+        void addName(std::string newName) 
+        { 
+            names.push_back(std::move(newName)); 
+        }        
+        void printNames()
+        { 
+            for (auto name: names) 
+                std::cout << name; 
+        }    
+        void printAddresses() { 
+            for (unsigned int i = 0; i < names.size(); i++ ) 
+                std::cout << &(names[i]) << std::endl;                                                
+        } 
+    private:
+        std::vector<std::string> names;
+};
+int main()
+{
+    Widget w;
+    std::string s = "hello ";
+    std::cout << "local variable's adress " << &s << std::endl;
+    w.addName(s);
+    w.addName("world!");
+    
+    w.printNames();    
+    std::cout << "\n";
+    
+    w.printAddresses();
+}
+/*Output:
+local variable's adress 0x7fffeb7dc720
+hello world!
+0x11c9190
+0x11c91b0
+*/
+```
 Advantages:
 * no *bloated* header file.
 * In C++11, it copies on lvalue and moves on rvalue
