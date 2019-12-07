@@ -1,11 +1,11 @@
-There is no strict rules in this chapter. It is depend on your use case. 
+There is no strict rules in this chapter. It depends on your usecases. 
 
 # Item 41: Consider pass-by-value for copyable parameters that are cheap to move and always copied
 
 ## Pass by value
 Nice to re-read item 25. Use std::move on rvalue references and std::forward on universal references.
 
-Let us consider a member function `Widget::addName()` copies its parameter into class's private container `names`. For efficiency, this function should copy lvalue arguments, but move rvalue arguments. Example: `push_back()` function of `std::vector` takes both lvalue and rvalue.
+Let us consider a member function `Widget::addName()` copies its parameter into class's private container `names`. For efficiency, this function should copy lvalue arguments, but move rvalue arguments. Example: `push_back()` function of `std::vector` is overloaded taking both lvalue and rvalue references.
 
 ### Two functions do the same thing
 ```c++
@@ -58,13 +58,13 @@ Let us see how does universal reference can help in this case:
 
 ```c++
 template<typename T>
-void addName(T&& newName) 
+void addName(T&& newName)                         //newName is an universal reference
 { 
     names.push_back(std::forward<T>(newName)); 
 }        
 ```
-Disavantages:
-* As a template, `addName`'s implementation needs to be included in header file - *bloated header file*. It may yields several functions in object code. Example: one for lvalue, one for rvalue, one for `std::string` and compatible types to `std::string` - Item 25. See code example below.
+Disadvantages:
+* As a template, `addName`'s implementation needs to be included in header file => *bloated header file*. It may yields several functions in object code. Example: one for lvalue, one for rvalue, one for `std::string` and ones for compatible types to `std::string` - Item 25. See code example below.
 * There are few argument types that can not be passed by universal reference -Item 30
 * Improper argument types lead to scary compiler error messages
 
@@ -174,15 +174,6 @@ class Widget
         { 
             names.push_back(std::move(newName));  // (2)after this, `newName` has no longer value
         }        
-        void printNames()
-        { 
-            for (auto name: names) 
-                std::cout << name; 
-        }    
-        void printAddresses() { 
-            for (unsigned int i = 0; i < names.size(); i++ ) 
-                std::cout << &(names[i]) << std::endl;                                                
-        } 
     private:
         std::vector<std::string> names;
 };
@@ -190,21 +181,9 @@ int main()
 {
     Widget w;
     std::string s = "hello ";
-    std::cout << "local variable's adress " << &s << std::endl;
     w.addName(s);
-    w.addName("world!");
-    
-    w.printNames();    
-    std::cout << "\n";
-    
-    w.printAddresses();
+    w.addName("world!");        
 }
-/*Output:
-local variable's adress 0x7fffeb7dc720
-hello world!
-0x11c9190
-0x11c91b0
-*/
 ```
 Advantages:
 * no *bloated* header file.
@@ -231,7 +210,7 @@ Let us consider the title of this item: "*Consider* pass-by-value for *copyable 
 * Advantages: one function, it generates one function in object code, avoid issues with universal reference. 
 * Disadvantages: higher cost.
 2. Consider pass-by value for only *copyable parameters*. Unlike this, `std::unique_ptr` is not copyable.
-Pass-by value is a bad approach. Cost = 2 moves = move ctor + `std::move`
+Pass-by value is a bad approach. Cost = 2 moves, including: move ctor + `std::move`
 ```c++
 #include <string>
 #include <memory>
@@ -251,7 +230,7 @@ int main()
     w.setPtr(std::make_unique<std::string>("C++"));
 }
 ```
-Overloading is a good approach. Cost = one move = `std::move`
+Overloading is a good approach. Cost = one move, i.e., `std::move`
 ```c++
 #include <string>
 #include <memory>
@@ -272,7 +251,7 @@ int main()
 }
 ```
 3. *cheap to move*. When it is not cheap, a move can cost like a copy.
-4. *always copied*. Some use case, some logic can prevent 100% copying, e.g, conditional copying.
+4. *always copied*. Some use case, some logic can prevent copying, e.g, conditional copying.
 This is bad because it costs one copy ctor but then destroy this object and nothing is added to `names`. 
 Better approach is pass by references.
 ```c++
@@ -302,6 +281,70 @@ int main()
     w.addName("world!");    
 }
 ```
-## lvalue auguments
+## With lvalue auguments, pass-by value then move assignment may cost more than pass-by reference, then copy assignment.
+```c++
+#include <string>
+#include <iostream>
+class Password
+{
+    public:
+        explicit Password(std::string pwd) 
+            : text(std::move(pwd)){}
+        void changeTo(std::string newPwd) //pass by value
+        {                                 //std::string copy ctor `newPwd`         
+            text = std::move(newPwd);     //`newPwd` is moved assigned to `text`
+            std::cout << &newPwd << "\n" << &text;
+        }                                 //could cause deallocate old password
+        //There could be two dynamic memory management actions: allocate new password, deallocate old password
+        //Where is `allocate new password`?
+    private:
+        std::string text;
+};
+int main()
+{
+    Password p = Password("ABC");
+    std::string newPassword = "XYZ";
+    std::cout << &newPassword << std::endl;
+    p.changeTo(newPassword);    
+
+}
+/*Output:
+0x7ffdf6b00b10
+0x7ffdf6b00b80
+0x7ffdf6b00b30
+*/
+```
+Three different memory addresses.
+
+Better version with pass by reference for lvalue reference
+```c++
+#include <string>
+#include <iostream>
+class Password
+{
+    public:
+        explicit Password(std::string pwd) 
+            : text(std::move(pwd)){}
+        void changeTo(const std::string& newPwd) //pass by reference
+        {                                 //no construct `newPwd` obj
+            text = newPwd;                //copy assignment
+            std::cout << &newPwd << "\n" << &text;
+        }                
+    private:
+        std::string text;
+};
+int main()
+{
+    Password p = Password("ABC");    
+    std::string newPassword = "XYZ";
+    std::cout << &newPassword << std::endl;
+    p.changeTo(newPassword);    
+}
+/*Output: 
+0x7ffc9e6437d0
+0x7ffc9e6437d0
+0x7ffc9e6437f0
+*/
+```
 ## Slicing problem
 
