@@ -38,14 +38,52 @@ Because of perfect forwarding, we can forward any argument to create a string, e
 ```c++
 #include <vector>
 #include <string>
+#include <initializer_list>
+#include <iostream>
 
 int main()
 {
     std::vector<std::string> vs;
     vs.emplace_back("abc");     //string literal
-    vs.emplace_back(50, 'x');
+    vs.emplace_back(50, 'x');   //because of ctor: string (size_t n, char c);
+    std::initializer_list<char> il = {'a', 'b', 'c'};
+    vs.emplace_back(il);        //because of ctor: string (initializer_list<char> il);
+    for(auto i : vs) {std::cout << i << std::endl;}
     return 0;
 }
+/*
+abc
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+abc
+*/
+```
+Function `emplace_back()` of `std::vector` takes variadic rvalue references
+
+```c++
+template <class... Args>
+  void emplace_back (Args&&... args);
 ```
 
-Heuristic when to use emplace_back()
+The above code on C++ Insight looks like:
+```c++
+  vs.emplace_back<char const (&)[4]>("abc");
+  vs.emplace_back<int, char>(50, 'x');
+  std::initializer_list<char> il = std::initializer_list<char>{'a', 'b', 'c'};
+  vs.emplace_back<std::initializer_list<char> &>(il);
+```
+
+Function `emplace_back()` is more flexible compared to `push_back()` because emplacement functions take *constructor arguments for objects to be inserted*, whereas insertion functions take *objects to be inserted.*
+
+Emplacement functions are for example: `list::emplace_back()`, `deque::emplace_front()`, `forward_list::emplace_after()`
+Insertion functions are: `vector::push_back()`, `list::push_front()`
+
+The following code shows emplacement and insertion functions have the same effect on `vs`, namely, adding one element to the end of vector.
+```c++
+std::string s();
+vs.push_back(s);
+vs.emplace_back(s);
+```
+Emplacement functions can do what insertion functions do, sometimes even more efficient. But not all the cases, here is some heuristics when to use emplacement functions:
+1. "The value being added is constructed into the container, not assigned."
+2. "The argument type(s) being passed differ from the type held by the container"
+3. "The container is unlikely to reject the new value as a duplicate."
