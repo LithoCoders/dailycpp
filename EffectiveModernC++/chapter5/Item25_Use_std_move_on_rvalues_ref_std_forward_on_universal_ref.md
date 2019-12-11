@@ -1,6 +1,6 @@
 **Rules**: Use `std::move` on rvalue references and `std::forward` on universal references.
 
-"Coding, many quotes from book Effective Modern C++"
+"Codings, many quotes from book Effective Modern C++"
 
 # Try to not follow the rules
 Ravlue references bind to object to be moved whereas universal references might bind to object that eligible to be moved.
@@ -92,6 +92,7 @@ class Widget {
   };
 ```
 Bad 1: With no function template, the code is lengthy and not efficient. Suppose, you need to call `w.setName("ABC")`. This creates a constructor for a temporary string `"ABC"`, a move, and a destructor. Not efficient.
+-> It makes sense because `"ABC"` is a *string literal*, not a string object. That is why a string constructor is called.
 
 Bad 2: Imagine you have a function taking n parameters, each of them can be an lvalue or an rvalue. Applying the above approach would produce you a 2^n combinations. You can not have 2^n overloading functions.
 
@@ -104,13 +105,15 @@ There are more rules...
 ## Apply `std::move` and `std::forward` at the end of usage
 Because you don't want to have unspecified value when you are not done with rvalue references and universal references
 ```c++
-template<typename T>                       // text is 
-void setSignText(T&& text)                 // univ. reference 
+template<typename T>                       
+void setSignText(T&& text)                 // `text` is a univ. reference 
 {  
-    sign.setText(text);                              // use text, but don't modify it
+    sign.setText(text);                              // use `text`, but don't modify it
     auto now = std::chrono::system_clock::now();     // get current time    
 
-    signHistory.add(now, std::forward<T>(text));  // conditionally cast text to rvalue 
+    //sign to some document at `now` with a `text`
+    signHistory.add(now, std::forward<T>(text));    //conditionally cast `text` to rvalue 
+                                                    //perfect fwding `text` in the end
 }                                      
 ```  
 
