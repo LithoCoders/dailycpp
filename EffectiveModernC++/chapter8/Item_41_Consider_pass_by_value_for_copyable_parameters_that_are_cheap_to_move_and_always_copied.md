@@ -191,7 +191,7 @@ Advantages:
 
 ### Recap on three approaches:
 ```c++
-//Approach 1: Overloading. Cost = one copy for lvalues & one move for rvalues
+//Approach 1: Overloading. Cost = one copy for lvalues (from `push_back()`) & one move for rvalues
         void addName(const std::string& newName) { names.push_back(newName); }         //perform a copy
         void addName(std::string&& newName) { names.push_back(std::move(newName)); }   //perform a move
         
