@@ -346,7 +346,7 @@ int main()
 0x7ffc9e6437f0
 */
 ```
-Two different memory addresses.
+Two different memory addresses. Compared to *passed by value* strategy, none of allocation/dealloction memory can happen.
 
 ## Slicing problem
 
