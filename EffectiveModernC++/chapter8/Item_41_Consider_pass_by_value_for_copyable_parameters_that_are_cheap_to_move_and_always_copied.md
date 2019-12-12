@@ -291,12 +291,12 @@ class Password
         explicit Password(std::string pwd) 
             : text(std::move(pwd)){}
         void changeTo(std::string newPwd) //pass by value
-        {                                 //std::string copy ctor `newPwd`         
+        {                                 //std::string copy ctor `newPwd`. *allocate new password*
             text = std::move(newPwd);     //`newPwd` is moved assigned to `text`
+                                          //causes deallocate old password when len(text) < len(newPwd)
             std::cout << &newPwd << "\n" << &text;
-        }                                 //could cause deallocate old password
-        //There could be two dynamic memory management actions: allocate new password, deallocate old password
-        //Where is `allocate new password`?
+        }                                 
+        //There could be two dynamic memory management actions: allocate new password, deallocate old password        
     private:
         std::string text;
 };
@@ -346,5 +346,7 @@ int main()
 0x7ffc9e6437f0
 */
 ```
+Two different memory addresses.
+
 ## Slicing problem
 
