@@ -79,9 +79,35 @@ Insertion functions are: `vector::push_back()`, `list::push_front()`
 
 The following code shows emplacement and insertion functions have the same effect on `vs`, namely, adding one element to the end of vector.
 ```c++
-std::string s();
-vs.push_back(s);
-vs.emplace_back(s);
+#include <string>
+#include <vector>
+int main()
+{
+    std::vector<std::string>  vs;
+  
+  	std::string s("abc");
+	  vs.push_back(s);
+	  vs.emplace_back(s);  //lvalue reference so no temporary string object created
+}
+
+//C++ Insight
+
+#include <string>
+#include <vector>
+int main()
+{
+  std::vector<std::string> vs = 
+    std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, 
+                                  std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >();
+  
+  std::string s = std::basic_string<char, std::char_traits<char>, std::allocator<char> >("abc", std::allocator<char>());
+  
+  vs.push_back(s);
+  vs.emplace_back<std::basic_string<char, std::char_traits<char>, std::allocator<char> > &>(s);
+}
+
+
+
 ```
 Emplacement functions can do what insertion functions do, sometimes even more efficient. But not all the cases, here is some heuristics when to use emplacement functions:
 1. "The value being added is constructed into the container, not assigned."
