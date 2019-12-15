@@ -52,7 +52,7 @@ hello world!
 ```
 We see that two functions doing the same thing but we need to maintain both of them. When two functions are not inline, then we have two functions in the object code.
 
-### Two functions are replaced with one function template taking universal reference
+### Two functions are replaced with one function template taking a universal reference
 
 Let us see how does universal reference can help in this case:
 
@@ -92,7 +92,7 @@ int main()
   	
     w.addValue(i);  //lvalue
     w.addValue(2);  //rvalue
-  	w.addValue(li); //`long`, compatible to `int`
+    w.addValue(li); //`long`, compatible to `int`
 }
 ```
 C++ Insight shows three instantiations
@@ -191,7 +191,7 @@ Advantages:
 
 ### Recap on three approaches:
 ```c++
-//Approach 1: Overloading. Cost = one copy for lvalues (from `push_back()`) & one move for rvalues
+//Approach 1: Overloading. Cost = one copy for lvalues (from `push_back()`) & one move for rvalues (also from `push_back()`)
         void addName(const std::string& newName) { names.push_back(newName); }         //perform a copy
         void addName(std::string&& newName) { names.push_back(std::move(newName)); }   //perform a move
         
@@ -349,4 +349,69 @@ int main()
 Two different memory addresses. Compared to *passed by value* strategy, none of allocation/dealloction memory can happen.
 
 ## Slicing problem
+The following code shows the slicing problem:
+```c++
+#include <iostream>
+class Base
+{
+    public:
+        int b = 0;
+};
+class Derived: public Base
+{
+    public:
+        int d = 0;
+};
 
+int main()
+{
+    Derived child;
+    child.b = 1;
+    child.d = 2;
+    Base father = child;        //slice away `child.d`
+    std::cout << child.b << child.d << std::endl;
+    std::cout << father.b;      //OK, print out `1`
+    std::cout << father.d;    //NOK
+    
+    return 0;
+}
+/*Output:
+prog.cc: In function 'int main()':
+prog.cc:21:25: error: 'class Base' has no member named 'd'
+   21 |     std::cout << father.d;    //NOK
+      |   
+*/
+```
+*Slicing* happens when you assign a derived object to a base object. After assignment `child` to `father` object, data member `d` is sliced away.
+
+Pass-by value also is also suffering from *slicing problem*. Thus, we should avoid passing objects of user-defined types by value. Same to both C++98 and C++11.
+
+```c++
+#include <iostream>
+class Widget
+{
+    public:
+        int w = 0;
+};
+class SpecialWidget: public Widget
+{
+    public:
+        int sw = 0;
+};
+
+void processWidget(Widget w)  //slicing problem
+{
+    std::cout << w.w;
+}
+
+int main()
+{
+    SpecialWidget sw;
+    processWidget(sw);    
+    return 0;
+}
+```
+# Things to remember
+* Pass-by value for copyable, cheap-to-move parameters that are always copied.
+* "For lvalue arguments, pass by value followed by move assignment may be significantly more expensive than pass by reference followed by copy assignment"
+* Avoid passing by value when `slicing problem` happens
