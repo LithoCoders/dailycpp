@@ -55,7 +55,7 @@ void push_back (value_type&& val);
 In the first call, it copies `s1` and put to the last element of `myvector`. `s1` still has its own value.
 In the second call, `s2` is converted to rvalue then moved to the last item of `myvector`. `s2` still exists but unspecified state, we can not get `s2` value.
 
-The following example shows you that xxxx
+The following example shows you that `std::move` does not move `text` to `value`
 ```c++
 #include <utility>      // std::move
 #include <iostream>    
@@ -63,8 +63,8 @@ The following example shows you that xxxx
 #include <string>      
 class Annotation{
     public:
-        //explicit Annotation(std::string& text) : value(std::move(text)){}
-        explicit Annotation(const std::string text) : value(std::move(text)){}
+        //explicit Annotation(std::string& text) : value(std::move(text)){}    //`text` is moved to `value`
+        explicit Annotation(const std::string text) : value(std::move(text)){} //`text` is copied to `value`
        
         std::string getValue() {return value;}
     private:
@@ -89,8 +89,7 @@ Finish
 In this example, even though `std::move` casts `text` to rvalue but it still calls copying `text` to `value`. Because ctor taks a `const` value, so it can not be moved.
 Two lessons:
 1. Don't declare objects `const` if we want to perform move semantics from them.
-2. `std::move` does not guarantee that rvalue it returns is eligible to be moved.
-`std::move` guarantees to return you an rvalue.
+2. `std::move` does not guarantee that the object it is casting, is eligible to be moved. `std::move` guarantees to return you an rvalue.
 
 # Perfect forwarding with `std::forward`
 While `std::move` unconditionally casts its argument to an rvalue, `std::forward` **conditionally** casts its argument to an rvalue. 
