@@ -128,6 +128,17 @@ Also the following cases need to be considered:
 
 ```c++
 std::list<std::shared_ptr<Widget>> ptrs;
+void killWidget(Widget* pWidget);
+
+
+ptrs.push_back(std::shared_ptr<Widget>(new Widget, killWidget)); // Either way could be used
+ptrs.push_back({ new Widget, killWidget });
 ```
 
-If you have a `std::shared_ptr` that should use a custom deleter, you cannot use `std::make_shared`(see item 21).
+If you have a `std::shared_ptr` that should use a custom deleter, you cannot use `std::make_shared`(see item 21). A temporary `std::shared_ptr` would need to be constructed before calling `push_back`. The construction of `std::shared_ptr` is something `emplace_back` would avoid. However the advantage of this is that when an exception is thrown during the allocation of the node to hold this object, there is no problem as the memory will be released. In the case of `emplace_back`:
+
+```c++
+ptrs.emplace_back(new Widget, killWidget)
+```
+ In this case the `new Widget` is perfect-forwarded to the place where the memory for the new node is to be allocated. However, if an
+ exception is thrown in this case, it leads to a memory leak.
