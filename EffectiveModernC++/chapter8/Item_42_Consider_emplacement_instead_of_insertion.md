@@ -110,6 +110,24 @@ int main()
 
 ```
 Emplacement functions can do what insertion functions do, sometimes even more efficient. But not all the cases, here is some heuristics when to use emplacement functions:
-1. "The value being added is constructed into the container, not assigned."
+1. "The value being added is constructed into the container, not assigned." 
 2. "The argument type(s) being passed differ from the type held by the container"
 3. "The container is unlikely to reject the new value as a duplicate."
+
+Consider the following piece of code satisfying the above conditions:
+
+```c++
+vs.emplace_back("xyzzy"); // construct new value at end of
+// container; don't pass the type in
+// container; don't use container
+// rejecting duplicates
+vs.emplace_back(50, 'x'); // ditto
+```
+
+Also the following cases need to be considered:
+
+```c++
+std::list<std::shared_ptr<Widget>> ptrs;
+```
+
+If you have a `std::shared_ptr` that should use a custom deleter, you cannot use `std::make_shared`(see item 21).
