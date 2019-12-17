@@ -141,4 +141,49 @@ If you have a `std::shared_ptr` that should use a custom deleter, you cannot use
 ptrs.emplace_back(new Widget, killWidget)
 ```
  In this case the `new Widget` is perfect-forwarded to the place where the memory for the new node is to be allocated. However, if an
- exception is thrown in this case, it leads to a memory leak.
+ exception is thrown in this case, it leads to a memory leak. A general rule is that you should not be passing expressions like
+ `new Widget` to `emplace_back`.
+ 
+ ```c++
+ std::shared_ptr<Widget> spw(new Widget, // create Widget and
+killWidget); // have spw manage it
+ptrs.push_back(std::move(spw));
+
+std::shared_ptr<Widget> spw(new Widget, killWidget);
+ptrs.emplace_back(std::move(spw));
+
+```
+
+In this case, `emplace_back` offers no performance advantage over insertion functions. Another case where you should be careful:
+
+```c++
+std::vector<std::regex> regexes;
+regexes.emplace_back(nullptr); // add nullptr to container of regexes? compiles
+std::regex r = nullptr; // error! won't compile
+regexes.push_back(nullptr); // error! won't compile
+std::regex r = nullptr; // error! won't compile
+regexes.push_back(nullptr); // error! won't compile
+
+std::regex r(nullptr); // compiles but undefined behavioir
+```
+
+The `std::regex` constructor takes a `char *` pointer to a string that comprises a valid regular expression. 
+
+```c++
+std::regex r1 = nullptr; // error! won't compile - copy initialization
+std::regex r2(nullptr); // compiles - direct initialization
+```
+
+Copy initialization is not used to use explicit constructors but direct initializaiton is. That's why r2 alone compiles. Emplacement functions use direct initialization which is why it uses explicit constructors for the compilation.
+
+```c++
+regexes.emplace_back(nullptr); // compiles. Direct init permits
+// use of explicit std::regex
+// ctor taking a pointer
+regexes.push_back(nullptr); // error! copy init forbids
+// use of that ctor
+```
+
+In summary,
+1. emplacement is efficient sometimes than insertion but that's not always the case. It should never be less efficient. See cases where they are faster.
+2. Emplacement functions may perform type conversions that would be rejected in insertion(see the last example).
