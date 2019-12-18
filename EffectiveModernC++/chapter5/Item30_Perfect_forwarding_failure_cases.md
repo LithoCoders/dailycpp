@@ -58,7 +58,7 @@ void forwardedToFunc(T param)
 }
 
 template<typename T>
-void func(T param)
+void func(T&& param)
 {    forwardedToFunc(std::forward<T>(param));
 }
 ```
