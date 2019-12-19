@@ -1,3 +1,5 @@
+```c++
+
 #include <cstdio>
 #include <unordered_map>
 #include <list>
@@ -66,3 +68,4 @@ WineType type; // in this class, type is
 - typedefs don’t support templatization, but alias declarations do.
 - Alias templates avoid the “::type” suffix and, in templates, the “typename”
 prefix often required to refer to typedefs.
+```
