@@ -1,4 +1,8 @@
 # Vision  
-- become better C++ programmers  
+- Become better C++ programmers  
 # Mission  
-- understand C++ textbooks
+- Understand C++ textbooks
+# Completed Books
+- Effective Modern C++ by Scott Meyers
+# In progress
+- API Design for C++ by Martin Reddy
