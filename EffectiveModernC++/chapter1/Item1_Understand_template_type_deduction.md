@@ -2,6 +2,7 @@ Given a function template like this:
 ```c++
 template<typename T>
 void f(ParamType param)
+f(expr);
 ```
 At call side, when calling f(x) compiler will deduce type for:
 * T
@@ -10,10 +11,10 @@ At call side, when calling f(x) compiler will deduce type for:
 Note that T and ParamType can be different (due to const, volatile , & or * specifier)
 
 # Case 1: ParamType is a reference or a pointer but not a universal reference
-Given a function template with ParamType is a reference: 
+## Case 1.1 Given a function template with ParamType is a reference: 
 ```c++
 template<typename T>
-void f(T & param);  // ParamType is T &
+void f(T& param);  // ParamType is T &
 ```
 At call side:
 ```c++
@@ -31,7 +32,7 @@ const int & rx = x;
 f(rx);              // T: const int, ParamType: const int &
                     // Note that T is not a reference due to patern matching
 ```
-Putting all together, output on C++Insights shows compiler deduce T and ParamType in two ways. 
+Output on C++Insights shows compiler deduces T and ParamType in two ways. 
 ```c++
 template<typename T>
 void func(T& param)
@@ -63,11 +64,11 @@ int main()
   func(cx);
   const int & rx = 3;
   func(rx);
-  return 1;
+  return 0;
 }
 
 ```
-Given:
+## Case 1.2 Given ParamType is a reference to const
 ```c++
 template<typename T>
 void f(const T & param);   // ParamType is const T &
@@ -80,7 +81,7 @@ f(cx);              // T: int, ParamType: const int &
 f(rx);              // T: int, ParamType: const int &
 ```
 
-Output on C++ Insights shows compiler always deduce to one form:
+Output on C++ Insights shows compiler deduces to one form:
 
 ```c++
 template<typename T>
@@ -105,19 +106,20 @@ int main()
   func(cx);
   const int & rx = 3;
   func(rx);
-  return 1;
+  return 0;
 }
 
 ```
 
-Given:
+## Case 1.3 Given ParamType is a pointer:
 ```c++
 template<typename T>
-void f(T * param);  // ParamType is T*
+void f(T* param);  // ParamType is T*
 ```
 ```c++
 int x = 27; 
 f(&x);              // T: int, ParamType: int *
+                    // following the rule: expr is &x, drop `&` then pattern-matching.
 
 const int * px = &x; 
 f(px);              // T: const int, ParamType: const int *
@@ -153,7 +155,7 @@ int main()
   func(&x);
   const int * px = &x;
   func(px);
-  return 1;
+  return 0;
 }
 
 ```
@@ -165,7 +167,8 @@ RULEs are:
 # Case 2: ParamType is universal reference
 ```c++
 template<typename T>
-void f(T && param); // ParamType is T&&
+void f(T&& param); // ParamType is T&&
+f(expr);
 ```
 At call side:
 ```c++
@@ -177,7 +180,7 @@ f(cx);              // T: const int &, ParamType: const int &
 const int & rx = x; 
 f(rx);              // T: const int &, ParamType: const int &
 
-f(27);              // T: int, ParamType: int &&
+f(27);              // T: int, ParamType: int&&
 ```
 Output from CppInsight
 ```c++
@@ -256,6 +259,7 @@ int main()
 Rules are:
 1. If expr’s type is a reference, ignore the reference part. 
 2. After that, if expr is const, ignore that too. If it is volatile, also ignore that.
+Make sense seems this is pass by value.
 
 ## Array arguments & function arguments
 In this case, we consider function template with ParamType is an array/ reference to an array
