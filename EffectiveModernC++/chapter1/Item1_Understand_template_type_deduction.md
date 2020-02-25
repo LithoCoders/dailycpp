@@ -363,10 +363,6 @@ But the niche case is when we can declare reference to array (and yes that is po
 Example:
 
 ```c++
-#include <cstdio>
-#include<iostream>
-using namespace std;
-
 template<typename T>
 void f(T param){
   return;
@@ -401,10 +397,6 @@ int main()
 becomes
 
 ```c++
-#include <cstdio>
-#include<iostream>
-using namespace std;
-
 template<typename T>
 void f(T param){
   return;
@@ -452,11 +444,11 @@ void f_reference<char const[12]>(char const (&param)[12])  // T: char const[12],
 
 int main()
 {
-  const char name[] = "hello world";
-  f(name);
-  f_array(name);
+  const char name[12] = "hello world";
+  f(static_cast<const char *>(name));
+  f_array(static_cast<const char *>(name));
   f_reference(name);
-  f_ptr(name);
+  f_ptr(static_cast<const char *>(name));
   return 0;
 }
 ```
