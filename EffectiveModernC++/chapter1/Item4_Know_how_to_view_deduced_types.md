@@ -126,7 +126,7 @@ l
 The implementation is free to choose whatever output they want for typeid... so do not expect or rely on anything super super usefule here.
 
 ### Through compiler specific macros
-Another way to do it is force to use compiler's specific macros such as `__PRETTY_PRINT__` in `gcc`
+Another way to do it is to build macros using `__PRETTY_FUNCTION__` constant. Other constants such as `_func_` and `_FUNCTION_` only show the function name.
 
 ```c++
 #include <cassert>
