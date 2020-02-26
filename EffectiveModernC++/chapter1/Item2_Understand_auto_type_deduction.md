@@ -1,4 +1,4 @@
-Template deduction is about deducting types for functions parameters involving templates. `auto` is a bit different because you do not use auto with templates. Interestingly the difference is almost null because auto works more or less the same way template deduction does. Only exception when `{}` involved
+Template deduction is about deducing types for functions parameters involving templates. `auto` is a bit different because you do not use `auto` with templates. Interestingly the difference is almost null because `auto` works more or less the same way template deduction does. Only exception when `{}` involves.
 
 # auto
 
