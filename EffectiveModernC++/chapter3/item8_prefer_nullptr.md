@@ -15,6 +15,8 @@ nullptr -> std::nullptr_t -> implicitly converts to all raw pointer types -> not
 std::nullptr_t -> nullptr -> circular definition
 ```
 
+## Prefer nullptr to 0 and NULL
+
 example 1.1 with only one function taking void*
 ```C++
 void f(void*)
@@ -78,6 +80,8 @@ if(result == 0){} // unclear what findRecord returns
 if(result == nullptr){} //result must be a ptr type
 
 ```
+## Avoid overloading on integral and pointer types.
+
 example 3.1 Casting NULL and 0 to shared_ptr and unique_ptr
 ```c++
 #include<iostream>
@@ -181,7 +185,7 @@ int main()
 
 Intermediate result from cppinsights.io
 
-```
+```c++
 template<typename FuncType,typename MuxType,typename PtrType>
 auto lockAndCall(FuncType func, MuxType& mutex, PtrType ptr) -> decltype(func(ptr))
 {
@@ -208,3 +212,7 @@ int main()
 ```
 
 Please note that a specialized version of the `lockAndCall` has been generated.
+
+## Things to remember:
+* Prefer nullptr to 0 and NULL
+* Avoid overloading on integral and pointer types.
