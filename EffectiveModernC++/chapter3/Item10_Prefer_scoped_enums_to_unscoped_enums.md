@@ -18,12 +18,11 @@ C++11 enumerators have scope inside braces
     auto blue = 10.0;
     Color c = Color::blue;
     std::cout << blue << std::endl;
-    //Using c
+    //Using c ...
     
-    Start
+    /*Output
     10
-    1
-    Finish
+    */
 ```
 # Advantage 2: C++11 enumerators are much more strongly typed
 
@@ -86,7 +85,7 @@ prog.cc:2:23: note:   initializing argument 1 of 'void func(std::size_t)'
     
 ```
 
-Fix with static_cast
+Fix with `static_cast`
 ```C++
 int main()
 {
