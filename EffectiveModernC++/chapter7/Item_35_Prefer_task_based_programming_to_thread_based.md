@@ -54,9 +54,9 @@ thread 9
 shared_variable=0
 ```
 
-In order to prevent access to the shared resource by multiple threads simultaneously, `std::mutex` is used. `std::lock_guard` 
-object is used to lock the mutex during its construction and automatically releases it when it goes out of scope (i.e it's destructor is called).
-Try to run this code without mutex multiple times and you will notice that each time, you will get a different result. This is because each of the thread starts execution concurrently and they access the `std::cout` and shared variable simultaneously. 
+In order to prevent access to the shared resource, i.e., `std::cout` by multiple threads simultaneously, `std::mutex` is used. `std::lock_guard` object is used to lock the mutex during its construction and automatically releases it when it goes out of scope (i.e it's destructor is called).
+Try to run this code without mutex multiple times and you will notice that each time, you will get a different **output** . This is because each of the thread starts execution concurrently and they access the `std::cout` simultaneously. Whereas, `shared_variable` is computed correctly even mutex is not used. But for complex computation, we should use mutex to prevent data race.
+
 ```c++
 #include<iostream>
 #include <thread>
@@ -103,13 +103,13 @@ thread 9
 shared_variable=0
 ```
 
-Using `std::thread` is referred to as thread based.
+Using `std::thread` is referred to as thread-based programming.
 
-In this item, the author suggests the reader to prefer task based approach. In C++11, task based approach is accomplished by
+In this item, the author suggests the reader to prefer task-based approach. In C++11, task-based approach is accomplished by
 the use of `std::async` objects. 
 
 ```c++
-#include<iostream>
+#include <iostream>
 #include <thread>
 #include <mutex>
 #include <future>
@@ -195,14 +195,14 @@ exception caught */
 One major difference that the author says between the task and the thread-based approach is that the task-based approach is more high level than the thread-based approach. In the thread-based approach, you will have to do manual thread management but that is not the case in the task-based approach.
 
 There are different kinds of threads:
-* Hardware threads are ones that perform actual computation. It depends on the CPU cores (often >= 1 hardwear thread per core)
+* Hardware threads are ones that perform actual computation. It depends on the CPU cores (often >= 1 hardware thread per core)
 * Software threads are also called as OS threads which is managed by the OS to be executed on the hardware threads. Typically,you can have more SW threads than hardware threads. 
 * `std::threads` are objects in a process and they act as handles to the OS software threads. If you try to create more threads than what the OS can handle, then an std::system_error is thrown even if the task is `noexcept`.
 
 ```c++
 int work() noexcept;
 
-std::thread t(work); throws if no more threads are available
+std::thread t(work); //throws if no more threads are available
 ```
 In order to make sure that you do not overload the system, you need to make sure that all threads could be run. You could 
 run out of threads that you can launch or *oversubscription*, i.e, you can have more threads that are ready to run. Typically, some of these issues are handled by the OS's thread scheduler and often this is accomplised by means of time slicing. The ratio of the software to hardware threads vary from machine to machine and and the same solution would not work for different architectures.
@@ -214,7 +214,7 @@ In some cases, you could use `std::thread` to:
 * optimize thread usage for a particular application.
 * implement threading technology, e.g, thread pool, beyond C++ concurrency API.
 
-In summary,
+## In summary,
 
 * `std::thread` does not offer any way to get return values from asynchronous tasks or functions and you cannot handle
 exceptions thrown from these functions.
