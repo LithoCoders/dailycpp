@@ -9,19 +9,18 @@ thread of execution that:
 
 *unjoinable* threads are `std::thread` objects are not joinable
 * default constructed `std::thread`
-* std::thread objects that have been moved from
-* std::thread objects that have been joined
-* std::thread objects that have been detached
+* `std::thread` objects that have been moved from
+* `std::thread` objects that have been joined
+* `std::thread` objects that have been detached
 ```c++
 std::thread t1 = std::thread(); //default ctor
 
 std::thread t2 = std::thread([](){});
 std::thread t3 = std::thread(std::move(t2)); //move ctor. t2 is unjoinable
 ```
-
 If the destructor for a joinable thread is invoked, execution of the
 program is terminated. This equals to no call to `join()` at all, so
-that thread object out of scope die. resulting to terminated program.
+that thread object out of scope die, resulting to terminated program.
 
 ```c++
 #include <thread>
@@ -71,12 +70,10 @@ bool doWork(std::function<bool(int)> filter, int maxVal = tenMillion)
         }
     })
 
-    auto native_handle = t.native_handle(); //return implementation
-defined underlying thread handle.
+    auto native_handle = t.native_handle(); //return implementation defined underlying thread handle.
 
     //set t's priority via native handle
-    //Unsuccessful to run example from
-en.cppreference.com/w/cpp/thread/thread/native_handle
+    //Unsuccessful to run example from en.cppreference.com/w/cpp/thread/thread/native_handle
 
     if(ConditionSatisfied())
     {
@@ -92,22 +89,15 @@ int main()
   return 0;
 }
 ```
-The problem is when `ConditionSatisfied()` returns `false`, or it
-throws an exception, `std::thread` object `t` is still joinable
-whereas its destructor is called at the end of scope. This causes
-program execution to be terminated. This is how `std::thread` dtor is
-designed. No implicit join nor implicit detach are implemented in
-`std::thread::~thread`. The author argues because of performance
+The problem is when function `ConditionSatisfied()` returns `false`, or it throws an exception, `std::thread` object `t` is still joinable
+whereas its destructor is called at the end of scope. This causes program execution to be terminated. This is how `std::thread` dtor is
+designed. No implicit join nor implicit detach are implemented in `std::thread::~thread`. The author argues because of performance
 pitfall and debugging troubles.
 
-Users have responsibilities to make `std::thread` object *unjoinable*
-on every path of program before calling its dtor. It is difficult to
-solve this because you need to consider all possibilities such as:
-`return`, `goto`, exception handling, `continue`, `break`, or `if`
+Users have responsibilities to make `std::thread` object *unjoinable* on every path of program before its dtor is called. It is difficult to solve this because you need to consider all possibilities such as: `return`, `goto`, exception handling, `continue`, `break`, or `if`
 command as above.
 
-The technique to have a common action along every path is putting it
-in dtor, i.e, RAII.
+The technique to have a common action along every path is putting it in dtor, i.e, RAII.
 
 ```c++
 #include <thread>
