@@ -58,7 +58,7 @@ thread 140161024485312 fut_&
 ```
 We see `fut_deferred`, `fut_&` running on the same thread as `main`. It seems, Gcc implementation chooses `fut_|` to be run asynchronously whereas, `fut_&` to be run synchronously.
 
-Putting this code on CppInsights C++2a, we only know all five threads inside `main` have the same type, namely `std::future<void>`. 
+Putting this code on CppInsights C++2a, we only know all five threads inside `main` have the same type, namely `std::future<void>`. This is because the callable object function `f()` returns a `void`. If we change return type of `f()` to `int` for example, then all futures have type of `std::future<int>`.
 
 ```c++
 int main()
@@ -124,7 +124,7 @@ Timeout...
 
 File size limit exceeded
 ```
-In this case, it seems thread run async. `fut.wait_for()` always returns `std::future_status::timeout` after 100ms !!! I don't know why thread is not executed and never be ready!!!
+In this case, it seems thread runs async. `fut.wait_for()` always returns `std::future_status::timeout` after 100ms !!! I don't know why thread is not executed and never be ready!!!
 
 In a worse case, thread runs synchronously, `f` is deferred, `fut` runs with `async::launch::deferred` policy, `fut.wait_for()` always returns `std::future_status::deferred`, it never equals to `std::future_status::ready`, loop runs forever.
 
@@ -160,10 +160,20 @@ int main()
     return 0;
 }
 
-//Output: Pitty that many tries show an async thread.
+/* Output: Pitty that many tries show an async thread.
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+task is not deferred nor ready...
+*/
 ```
 
 ## Things to Remember
-* The default launch policy mean both asynchronous and synchronous run.
+* The default launch policy means both asynchronous and synchronous run.
 * This flexibility leads to uncertainty which kind of run is it, thus don't know if you need to call `get()`.
-* Thus, be explicit to say std::launch::async if asynchronous task execution is needed.
+* Thus, be explicit to say std::launch::async if asynchronous task execution is essential.
